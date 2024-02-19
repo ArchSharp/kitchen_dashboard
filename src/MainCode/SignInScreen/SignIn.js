@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../SignUpScreen/signup.css";
 import { Link, useNavigate } from "react-router-dom";
-import { Signin } from "../../Features/kitchenSlice";
+import { Signin, setNotifyMessage } from "../../Features/kitchenSlice";
 import { notification } from "antd";
 import {
   selectKitchen,
@@ -28,17 +28,27 @@ function SignIn() {
 
   useEffect(() => {
     if (notifyMessage?.isSuccess === true) {
-      delete notifyMessage.isSuccess;
-      notification.success(notifyMessage);
+      var response = { ...notifyMessage };
+      delete response.isSuccess;
+      response = {
+        ...response,
+        onClose: () => dispatch(setNotifyMessage(null)),
+      };
+      notification.success(response);
       navigate("/home");
-    } else if (notifyMessage?.isSuccess === false) {
-      delete notifyMessage.isSuccess;
-      notification.success(notifyMessage);
+    } else if (notifyMessage?.isSuccess === false && notifyMessage?.message) {
+      var response = { ...notifyMessage };
+      delete response.isSuccess;
+      response = {
+        ...response,
+        onClose: () => dispatch(setNotifyMessage(null)),
+      };
+      notification.error(response);
       if (notifyMessage.message === "Unverified email") {
         navigate(`/verifyEmail?showResend=true&email=${formData.Email}`);
       }
     }
-  }, [navigate, notifyMessage, formData]);
+  }, [navigate, dispatch, notifyMessage, formData]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

@@ -12,19 +12,29 @@ import {
   Input,
 } from "antd";
 import { MailOutlined, BellFilled } from "@ant-design/icons";
-import { useMenuContext } from "../MainCode/SideBarLinkPage/Menus/MenuContext";
 import { GetReviews, NotifyEveryone } from "../Features/kitchenSlice";
 import { message } from "antd";
+import { selectKitchen, useAppSelector, useAppDispatch } from "../Store/store";
 
 function Header() {
-  const { userData, auth } = useMenuContext();
-  const [totalReviews, setTotalReviews] = useState(0);
+  // const { userData, auth } = useMenuContext();
+  const dispatch = useAppDispatch();
+  const { userData, auth, reviews } = useAppSelector(selectKitchen);
+  // const [totalReviews, setTotalReviews] = useState(0);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [notificationTitle, setNotificationTitle] = useState("");
   const [notificationMessage, setNotificationMessage] = useState("");
   const storedKitchenImageUrl = localStorage.getItem("kitchenImageUrl");
   const [totalAgreeCount, setTotalAgreeCount] = useState(0);
   const [totalDisagreeCount, setTotalDisagreeCount] = useState(0);
+
+  useEffect(() => {
+    if (!reviews) {
+      const isBasicStaff = userData.Role === "basic";
+      const kitchenId = isBasicStaff ? userData.KitchenId : userData.Id;
+      dispatch(GetReviews(kitchenId));
+    }
+  }, []);
 
   const imageStyle = {
     width: "50px",
@@ -90,26 +100,21 @@ function Header() {
   useEffect(() => {
     const fetchReviews = async () => {
       try {
-        const response = await GetReviews(userData, auth);
-        if (response && response.code === 200) {
-          const reviewsResponse = response.body;
-          const totalReviewsReceived = reviewsResponse
-            ? reviewsResponse.length
-            : 0;
-          setTotalReviews(totalReviewsReceived);
+        if (reviews) {
+          const reviewsResponse = reviews;
 
-          if (reviewsResponse && Array.isArray(reviewsResponse)) {
-            const totalAgree = reviewsResponse.reduce(
-              (total, review) => total + parseInt(review.AgreeCount),
-              0
-            );
-            const totalDisagree = reviewsResponse.reduce(
-              (total, review) => total + parseInt(review.DisagreeCount),
-              0
-            );
-            setTotalAgreeCount(totalAgree);
-            setTotalDisagreeCount(totalDisagree);
-          }
+          // if (reviewsResponse && Array.isArray(reviewsResponse)) {
+          const totalAgree = reviewsResponse.reduce(
+            (total, review) => total + parseInt(review.AgreeCount),
+            0
+          );
+          const totalDisagree = reviewsResponse.reduce(
+            (total, review) => total + parseInt(review.DisagreeCount),
+            0
+          );
+          setTotalAgreeCount(totalAgree);
+          setTotalDisagreeCount(totalDisagree);
+          // }
         }
       } catch (error) {
         console.error("Error fetching kitchen reviews:", error);
@@ -141,7 +146,7 @@ function Header() {
           >
             {kitchenRating.toFixed(1)}
           </span>
-          <Badge count={totalReviews} style={{ cursor: "pointer" }}>
+          <Badge count={reviews?.length} style={{ cursor: "pointer" }}>
             <MailOutlined style={{ fontSize: "20px" }} />
           </Badge>
           <Badge style={{ cursor: "pointer" }} onClick={handleBellIconClick}>

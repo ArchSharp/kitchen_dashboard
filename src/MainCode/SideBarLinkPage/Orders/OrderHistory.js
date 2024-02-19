@@ -1,38 +1,35 @@
 import React, { useState, useEffect } from "react";
 import { Card, Table, Tag, Input, Modal, message } from "antd";
-import { useMenuContext } from "../Menus/MenuContext";
-import { GetKitchenOrders } from "../../../Features/kitchenSlice";
 import { Printer } from "phosphor-react";
+import {
+  selectKitchen,
+  useAppSelector,
+  // useAppDispatch,
+} from "../../../Store/store";
 
 function History() {
   const [searchText, setSearchText] = useState("");
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const { userData, auth } = useMenuContext();
+  // const { userData, auth } = useMenuContext();
+  const { userData, auth, orders } = useAppSelector(selectKitchen);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(2);
   const [kitchenOrders, setKitchenOrders] = useState([]);
   const [filteredKitchenOrders, setFilteredKitchenOrders] = useState([]);
 
   const fetchKitchenOrders = async () => {
-    try {
-      const response = await GetKitchenOrders(userData, auth);
-      if (response.code === 200) {
-        const orders = response.body.Orders;
+    if (orders) {
+      const paidOrders = orders.filter((order) => order.IsPaid === true);
 
-        const paidOrders = orders.filter((order) => order.IsPaid === true);
+      const sortedOrders = paidOrders.sort((a, b) => {
+        const dateA = new Date(a.CreatedAt);
+        const dateB = new Date(b.CreatedAt);
+        return dateB - dateA;
+      });
 
-        const sortedOrders = paidOrders.sort((a, b) => {
-          const dateA = new Date(a.CreatedAt);
-          const dateB = new Date(b.CreatedAt);
-          return dateB - dateA;
-        });
-
-        setKitchenOrders(sortedOrders);
-        setFilteredKitchenOrders(sortedOrders);
-      }
-    } catch (error) {
-      message.error("Failed to fetch kitchen orders");
+      setKitchenOrders(sortedOrders);
+      setFilteredKitchenOrders(sortedOrders);
     }
   };
 

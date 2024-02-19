@@ -11,7 +11,6 @@ import {
   Alert,
   message,
 } from "antd";
-import { useMenuContext } from "./MenuContext";
 import {
   CreateMenu,
   UpdateMenu,
@@ -19,21 +18,25 @@ import {
   GetKitchenMenus,
 } from "../../../Features/kitchenSlice";
 import moment from "moment";
+import {
+  selectKitchen,
+  useAppSelector,
+  useAppDispatch,
+} from "../../../Store/store";
+import {
+  openModal,
+  closeModal,
+  SetMenus,
+} from "../../../Features/kitchenSlice";
 
 const { Column } = Table;
 const { Search } = Input;
 
 const MenuScreen = () => {
+  const dispatch = useAppDispatch();
+  const { userData, auth, menus, isModalVisible } =
+    useAppSelector(selectKitchen);
   const [menuItems, setMenuItems] = useState([]);
-  const {
-    isModalVisible,
-    openModal,
-    closeModal,
-    userData,
-    auth,
-    setMenus,
-    menus,
-  } = useMenuContext();
   const [newMenuAlertVisible, setNewMenuAlertVisible] = useState(false);
   const [editMenuAlertVisible, setEditMenuAlertVisible] = useState(false);
   const [deleteMenuAlertVisible, setDeleteMenuAlertVisible] = useState(false);
@@ -50,7 +53,14 @@ const MenuScreen = () => {
     Status: "",
     Price: "",
   });
-  const [loadingMenus, setLoadingMenus] = useState(true);
+
+  useEffect(() => {
+    if (!menus) {
+      const isBasicStaff = userData.Role === "basic";
+      const kitchenId = isBasicStaff ? userData.KitchenId : userData.Id;
+      dispatch(GetKitchenMenus(kitchenId));
+    }
+  }, []);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(7);
@@ -58,25 +68,15 @@ const MenuScreen = () => {
   // console.log(userData)
 
   const fetchMenus = async () => {
-    try {
-      setLoadingMenus(true);
-      const response = await GetKitchenMenus(userData, auth);
+    const isBasicStaff = userData.Role === "basic";
+    const kitchenId = isBasicStaff ? userData.KitchenId : userData.Id;
+    dispatch(GetKitchenMenus(kitchenId));
 
-      if (response.code === 200) {
-        const menuItemsArray = response.body || []; // Ensure menuItemsArray is not null or undefined
-        const sortedMenus = menuItemsArray.sort((a, b) => {
-          return moment(b.CreatedAt).valueOf() - moment(a.CreatedAt).valueOf();
-        });
-        setMenuItems(sortedMenus);
-      } else {
-        message.error("Failed to fetch menus");
-      }
-
-      setLoadingMenus(false);
-    } catch (error) {
-      console.error(error);
-      message.error("Internal Server Error", error);
-      setLoadingMenus(false);
+    if (menus) {
+      const sortedMenus = [...menus].sort((a, b) => {
+        return moment(b.CreatedAt).valueOf() - moment(a.CreatedAt).valueOf();
+      });
+      setMenuItems(sortedMenus);
     }
   };
 
@@ -93,63 +93,17 @@ const MenuScreen = () => {
   };
 
   const handleFormSubmit = async (values) => {
-    setLoading(true);
-    try {
-      const newValues = {
-        ...formData,
-        Status: formData.TotalQuantity > 0 ? "available" : "finished",
-        CreatedAt: moment().toISOString(),
-      };
+    const isBasicStaff = userData.Role === "basic";
+    const kitchenId = isBasicStaff ? userData.KitchenId : userData.Id;
+    const newValues = {
+      ...formData,
+      KitchenId: kitchenId,
+      Status: formData.TotalQuantity > 0 ? "available" : "finished",
+      // CreatedAt: moment().toISOString(),
+    };
 
-      const response = await CreateMenu(newValues, auth, userData);
-      console.log(response);
-      if (response.code === 200) {
-        if (editItem) {
-          const updatedMenuItems = menuItems.map((item) => {
-            if (item.key === editItem.key) {
-              return {
-                ...item,
-                Price: values.Price,
-                TotalQuantity: values.TotalQuantity,
-                Status: values.TotalQuantity > 0 ? "available" : "finished",
-              };
-            }
-            return item;
-          });
-
-          localStorage.setItem("menus", JSON.stringify(updatedMenuItems));
-
-          setMenuItems(updatedMenuItems);
-          setEditItem(null);
-        } else {
-          const newMenuItem = {
-            key: response.body.Id,
-            ...formData,
-            Status: formData.TotalQuantity > 0 ? "available" : "finished",
-          };
-
-          const updatedMenuItems = menuItems
-            ? menuItems.concat(newMenuItem)
-            : [newMenuItem];
-
-          localStorage.setItem("menus", JSON.stringify(updatedMenuItems));
-
-          setMenuItems(updatedMenuItems);
-          message.success("Menu item created successfully.");
-          // console.log(response);
-        }
-        fetchMenus();
-        closeModal();
-      } else {
-        setLoading(false);
-        message.error("Failed to create menu");
-      }
-    } catch (error) {
-      console.error("Internal Server Error", error);
-      message.error("Internal Server Error", error);
-    } finally {
-      setLoading(false);
-    }
+    dispatch(CreateMenu(userData, newValues));
+    dispatch(closeModal());
   };
 
   const handleEdit = (record) => {
@@ -167,32 +121,9 @@ const MenuScreen = () => {
         type: "danger",
       },
       onOk: async () => {
-        try {
-          const response = await DeleteMenu(auth, record);
-          // console.log(response);
-          if (
-            response.message === `FoodMenu with id ${MenuId} has been deleted!`
-          ) {
-            const updatedMenuItems = menuItems.filter(
-              (item) => item.key !== record.key
-            );
-            setMenuItems(updatedMenuItems);
-
-            const updatedMenus = menus.filter((menus) => menus !== record.key);
-            setMenus(updatedMenus);
-
-            localStorage.setItem("menus", JSON.stringify(updatedMenuItems));
-
-            message.success("Menu item deleted successfully");
-            if (updatedMenuItems.length === 0) {
-              setMenuItems([]);
-            }
-            clearLocalStorage();
-          }
-          fetchMenus();
-        } catch (error) {
-          console.error(error);
-        }
+        const isBasicStaff = userData.Role === "basic";
+        const kitchenId = isBasicStaff ? userData.KitchenId : userData.Id;
+        dispatch(DeleteMenu(record.Id, kitchenId));
       },
     });
   };
@@ -206,57 +137,22 @@ const MenuScreen = () => {
   // console.log(menusData)
 
   const handleEditFormSubmit = async (values) => {
-    setLoading(true);
-    try {
-      const menuId = editItem ? editItem.key : null;
-
-      if (!menuId) {
-        console.error("MenuId is undefined or null.");
-        return;
-      }
-
-      const payload = {
-        TotalQuantity: values.TotalQuantity,
-        Price: values.Price,
-        Status: values.TotalQuantity > 0 ? "available" : "finished",
-      };
-
-      const response = await UpdateMenu(menuId, payload, auth);
-
-      if (response) {
-        if (response.code === 200) {
-          const updatedMenuItems = menuItems.map((item) => {
-            if (item.key === menuId) {
-              return {
-                ...item,
-                Price: values.Price,
-                TotalQuantity: values.TotalQuantity,
-                Status: values.TotalQuantity > 0 ? "available" : "finished",
-              };
-            }
-            return item;
-          });
-
-          localStorage.setItem("menus", JSON.stringify(updatedMenuItems));
-
-          setMenuItems(updatedMenuItems);
-          message.success("Menu item updated successfully");
-
-          setMenus(response.body);
-          fetchMenus();
-        } else {
-          console.error("Failed to update menu item");
-        }
-      } else {
-        console.error("Response is undefined or null.");
-      }
-    } catch (error) {
-      console.error(error);
-      message.error("Internal Server Error", error);
-    } finally {
-      setLoading(false);
-      setEditModalVisible(false);
+    const menuId = editItem ? editItem.key : null;
+    if (!menuId) {
+      console.error("MenuId is undefined or null.");
+      return;
     }
+
+    const payload = {
+      TotalQuantity: values.TotalQuantity,
+      Price: values.Price,
+      Status: values.TotalQuantity > 0 ? "available" : "finished",
+    };
+
+    const isBasicStaff = userData.Role === "basic";
+    const kitchenId = isBasicStaff ? userData.KitchenId : userData.Id;
+    dispatch(UpdateMenu(menuId, kitchenId, payload));
+    setEditModalVisible(false);
   };
 
   const filteredMenuItems = menuItems
@@ -301,7 +197,7 @@ const MenuScreen = () => {
           <Button
             type="primary"
             style={{ marginLeft: "auto", marginTop: "1rem" }}
-            onClick={openModal}
+            onClick={() => dispatch(openModal())}
           >
             Add a new menu
           </Button>
@@ -353,7 +249,7 @@ const MenuScreen = () => {
       <Modal
         title="Add a new menu"
         open={isModalVisible}
-        onCancel={closeModal}
+        onCancel={() => dispatch(closeModal())}
         footer={null}
       >
         <Form onFinish={handleFormSubmit}>

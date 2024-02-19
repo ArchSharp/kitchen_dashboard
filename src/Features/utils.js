@@ -1,9 +1,20 @@
 import Axios from "axios";
 import store from "../Store/store";
+import { GetNewToken } from "./kitchenSlice";
 
-const baseURL = "https://localhost:3000/";
+const baseURL = "https://f5e2-102-88-63-209.ngrok-free.app/";
 
 export const axios = Axios.create({ baseURL, withCredentials: true });
+
+export const axiosAuth = (refreshToken) => {
+  return Axios.create({
+    baseURL,
+    timeout: 10000,
+    headers: {
+      Authorization: "Bearer " + refreshToken,
+    },
+  });
+};
 
 const axiosWithAuth = Axios.create();
 
@@ -28,6 +39,8 @@ axiosWithAuth.interceptors.response.use(
       //   };
       //   await store.dispatch(setShowAlert(msg));
       //   await store.dispatch(setISAuth(false));
+      const user = store.getState().kitchen.userData;
+      await store.dispatch(GetNewToken(user));
 
       // After getting a new token, retry the original request
       //   const config = error.config;

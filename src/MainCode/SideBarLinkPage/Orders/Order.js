@@ -20,13 +20,21 @@ import {
   SendNotification,
 } from "../../../Features/kitchenSlice";
 import { ChatCircleDots } from "phosphor-react";
+import {
+  selectKitchen,
+  useAppSelector,
+  useAppDispatch,
+} from "../../../Store/store";
 const { Panel } = Collapse;
 const { Option } = Select;
 
 const Orders = () => {
-  const { userData, auth } = useMenuContext();
-  const [orders, setOrders] = useState([]);
-  const [fetchedOrders, setFetchedOrders] = useState([]);
+  // const { userData, auth } = useMenuContext();
+  const dispatch = useAppDispatch();
+  const { userData, auth, orders } = useAppSelector(selectKitchen);
+  // const [orders, setOrders] = useState([]);
+
+  // const [fetchedOrders, setFetchedOrders] = useState(orders);
   const [currentOrderIndex, setCurrentOrderIndex] = useState(0);
   const [attendedOrders, setAttendedOrders] = useState([]);
   const [doneAndPackagedOrders, setDoneAndPackagedOrders] = useState([]);
@@ -38,6 +46,12 @@ const Orders = () => {
   const audioRef = useRef(null);
   const animationRef = useRef(null);
 
+  useEffect(() => {
+    if (!orders) {
+      dispatch(GetKitchenOrders(userData?.KitchenEmail));
+    }
+  }, []);
+
   const handleAttendedFilterChange = (value) => {
     setAttendedFilter(value);
   };
@@ -45,12 +59,15 @@ const Orders = () => {
   const currentDate = moment();
   const today = currentDate.date();
 
-  const filteredOrders = fetchedOrders.filter((order) => {
+  const filteredOrders = orders?.filter((order) => {
     const orderDate = moment(order.CreatedAt);
     return today === orderDate.date() && order.IsPaid === true;
   });
 
-  const currentOrder = filteredOrders[currentOrderIndex];
+  var currentOrder;
+  if (orders) {
+    currentOrder = filteredOrders[currentOrderIndex];
+  }
 
   const handleChatIconClick = () => {
     setChatModalVisible(true);
@@ -103,61 +120,30 @@ const Orders = () => {
     setChatModalVisible(false);
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const storedOrders = localStorage.getItem("orders");
-        if (storedOrders) {
-          try {
-            const parsedOrders = JSON.parse(storedOrders);
-            setOrders(parsedOrders);
-          } catch (error) {
-            console.error("Failed to parse stored orders:", error);
-          }
-        }
-      } catch (error) {
-        console.error("Failed to fetch orders:", error);
-      }
-    };
-
-    fetchData();
-  }, []);
-
   const fetchOrders = async () => {
-    try {
-      if (auth) {
-        const fetchedOrdersResponse = await GetKitchenOrders(userData, auth);
-        // console.log(fetchedOrdersResponse)
-        if (fetchedOrdersResponse && fetchedOrdersResponse.code === 200) {
-          setFetchedOrders(fetchedOrdersResponse.body.Orders);
-          const orders = fetchedOrdersResponse.body.Orders;
+    if (userData) {
+      dispatch(GetKitchenOrders(userData?.KitchenEmail));
 
-          const sortedMenus = orders.sort((a, b) => {
-            return (
-              moment(b.CreatedAt).valueOf() - moment(a.CreatedAt).valueOf()
-            );
-          });
+      const sortedMenus = orders.sort((a, b) => {
+        return moment(b.CreatedAt).valueOf() - moment(a.CreatedAt).valueOf();
+      });
 
-          const filteredOrdersForToday = sortedMenus.filter((order) => {
-            const orderDate = moment(order.CreatedAt);
-            return today === orderDate.date();
-          });
+      const filteredOrdersForToday = sortedMenus.filter((order) => {
+        const orderDate = moment(order.CreatedAt);
+        return today === orderDate.date();
+      });
 
-          filteredOrdersForToday.forEach((order, index) => {
-            order.OrderNumber = index + 1;
-          });
+      filteredOrdersForToday.forEach((order, index) => {
+        order.OrderNumber = index + 1;
+      });
 
-          setOrderNumber(orderNumber + orders.length);
-        }
-      }
-    } catch (error) {
-      message.error("Failed to fetch orders, check your internet connection");
+      setOrderNumber(orderNumber + orders.length);
     }
   };
 
   useEffect(() => {
     // fetchOrders();
-    const intervalId = setInterval(fetchOrders, 2000);
+    const intervalId = setInterval(fetchOrders, 200000);
     return () => clearInterval(intervalId);
   }, [auth]);
 
@@ -240,11 +226,13 @@ const Orders = () => {
       : 0;
 
     // Sort the orders by creation time in descending order
-    const sortedOrders = [...filteredOrders].sort(
-      (a, b) => moment(b.CreatedAt).unix() - moment(a.CreatedAt).unix()
-    );
-
-    const currentOrder = sortedOrders[currentOrderIndex];
+    var currentOrder;
+    if (filteredOrders) {
+      const sortedOrders = [...filteredOrders].sort(
+        (a, b) => moment(b.CreatedAt).unix() - moment(a.CreatedAt).unix()
+      );
+      currentOrder = sortedOrders[currentOrderIndex];
+    }
 
     const isNewOrder =
       currentOrder &&
@@ -294,7 +282,7 @@ const Orders = () => {
         alignItems: "center",
       }}
     >
-      {filteredOrders.length > 0 && (
+      {filteredOrders?.length > 0 && (
         <div
           style={{
             marginBottom: "20px",
@@ -321,15 +309,15 @@ const Orders = () => {
         </div>
       )}
 
-      {filteredOrders.length > 0 ? (
+      {filteredOrders?.length > 0 ? (
         <>
           <Collapse
             accordion
             style={{ width: "60rem", marginTop: "10px", marginLeft: "50px" }}
           >
             {filteredOrders
-              .slice(currentOrderIndex, currentOrderIndex + ordersPerPage)
-              .filter(
+              ?.slice(currentOrderIndex, currentOrderIndex + ordersPerPage)
+              ?.filter(
                 (order) =>
                   order.TrxRef.toString().includes(searchQuery) &&
                   (attendedFilter === null ||
@@ -474,7 +462,7 @@ const Orders = () => {
             marginTop: "20%",
           }}
         >
-          {filteredOrders.length === 0
+          {filteredOrders?.length === 0
             ? "No delicious orders have arrived just yet. The kitchen awaits its first culinary masterpiece! 🍔🍕🍝"
             : "Loading..."}
         </div>

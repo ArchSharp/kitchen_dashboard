@@ -1,19 +1,30 @@
 import React, { useEffect, useState } from "react";
-import { Space } from "antd";
+import { Space, notification } from "antd";
 import Header from "../../Components/Header";
 import Footer from "../../Components/Footer";
 import Sidebar from "../../Components/Sidebar";
 import PageContent from "../../Components/PageContent";
 import "../../Components/dash.css";
-import { useMenuContext } from "../SideBarLinkPage/Menus/MenuContext";
 import { useNavigate } from "react-router-dom";
-import { Signin, GetNewToken } from "../../Features/kitchenSlice";
+import {
+  Signin,
+  GetNewToken,
+  setNotifyMessage,
+} from "../../Features/kitchenSlice";
+import {
+  selectKitchen,
+  useAppSelector,
+  useAppDispatch,
+} from "../../Store/store";
 
 function Home() {
+  const dispatch = useAppDispatch();
   const [selectedMenuItem, setSelectedMenuItem] = useState("/orders");
-  const { auth, userData, refreshToken } = useMenuContext();
+  // const { auth, userData, refreshToken } = useMenuContext();
   const { intV, setIntV } = useState(10000);
   const navigate = useNavigate();
+  const { auth, userData, refreshToken, notifyMessage } =
+    useAppSelector(selectKitchen);
 
   useEffect(() => {
     let isMounted = true;
@@ -45,6 +56,27 @@ function Home() {
     }, [intV]);
     return clearInterval(interval);
   }, [userData, refreshToken]);
+
+  useEffect(() => {
+    if (notifyMessage?.isSuccess === true) {
+      var response = { ...notifyMessage };
+      delete response.isSuccess;
+      response = {
+        ...response,
+        onClose: () => dispatch(setNotifyMessage(null)),
+      };
+      notification.success(response);
+      navigate("/home");
+    } else if (notifyMessage?.isSuccess === false && notifyMessage?.message) {
+      var response = { ...notifyMessage };
+      delete response.isSuccess;
+      response = {
+        ...response,
+        onClose: () => dispatch(setNotifyMessage(null)),
+      };
+      notification.error(response);
+    }
+  }, [navigate, dispatch, notifyMessage]);
 
   return (
     <div className="Home">

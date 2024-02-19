@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState } from "react";
 
 const MenuContext = createContext();
 
@@ -11,31 +11,33 @@ export function MenuProvider({ children }) {
   const [currentOrders, setCurrentOrders] = useState([]);
   const [orderHistory, setOrderHistory] = useState([]);
 
-  const storedUserData = localStorage.getItem('userData');
+  const storedUserData = localStorage.getItem("userData");
   const initialUserData = storedUserData ? JSON.parse(storedUserData) : null;
 
-  const storedAuthData = localStorage.getItem('auth');
+  const storedAuthData = localStorage.getItem("auth");
   const initialAuth = storedAuthData ? JSON.parse(storedAuthData) : null;
 
-  const storedMenus = localStorage.getItem('menus');
+  const storedMenus = localStorage.getItem("menus");
   const initialMenus = storedMenus ? JSON.parse(storedMenus) : null;
 
-  const storedStaff = localStorage.getItem('staffs');
+  const storedStaff = localStorage.getItem("staffs");
   const initialStaff = storedStaff ? JSON.parse(storedStaff) : null;
 
-  const storedImage = localStorage.getItem('Image');
+  const storedImage = localStorage.getItem("Image");
   const initialImage = storedImage ? JSON.parse(storedImage) : null;
 
-  const storedOrders = localStorage.getItem('fetchedOrders');
+  const storedOrders = localStorage.getItem("fetchedOrders");
   const initialOrders = storedOrders ? JSON.parse(storedOrders) : null;
 
-  const storedRefreshToken = localStorage.getItem('refreshtoken');
-  const initialRefreshToken = storedRefreshToken ? JSON.parse(storedRefreshToken) : null;
+  const storedRefreshToken = localStorage.getItem("refreshtoken");
+  const initialRefreshToken = storedRefreshToken
+    ? JSON.parse(storedRefreshToken)
+    : null;
 
   const [userData, setUserData] = useState(initialUserData);
   const [auth, setAuth] = useState(initialAuth);
   const [menus, setMenus] = useState(initialMenus);
-  const [staffs, setStaffs] = useState(initialStaff); 
+  const [staffs, setStaffs] = useState(initialStaff);
   const [image, setImage] = useState(initialImage);
   const [fetchedOrders, setFetchedOrders] = useState(initialOrders);
   const [refreshToken, setRefreshToken] = useState(initialRefreshToken);
@@ -53,7 +55,9 @@ export function MenuProvider({ children }) {
   };
 
   const removeOrderAndAddToHistory = (order) => {
-    setCurrentOrders((prevOrders) => prevOrders.filter((prevOrder) => prevOrder !== order));
+    setCurrentOrders((prevOrders) =>
+      prevOrders.filter((prevOrder) => prevOrder !== order)
+    );
     setOrderHistory((prevHistory) => [...prevHistory, order]);
   };
 
@@ -66,13 +70,13 @@ export function MenuProvider({ children }) {
   };
 
   const logout = () => {
-    localStorage.removeItem('userData');
-    localStorage.removeItem('auth');
-    localStorage.removeItem('refreshtoken');
-    localStorage.removeItem('menus');
-    localStorage.removeItem('staffs');
-    localStorage.removeItem('Image');
-    localStorage.removeItem('fetchedOrders');
+    localStorage.removeItem("userData");
+    localStorage.removeItem("auth");
+    localStorage.removeItem("refreshtoken");
+    localStorage.removeItem("menus");
+    localStorage.removeItem("staffs");
+    localStorage.removeItem("Image");
+    localStorage.removeItem("fetchedOrders");
     setUserData(null);
     setAuth(null);
     setMenus(null);
@@ -80,10 +84,36 @@ export function MenuProvider({ children }) {
     setImage(null);
     setFetchedOrders(null);
     window.location.reload();
-  }
+  };
 
   return (
-    <MenuContext.Provider value={{ isModalVisible, openModal, closeModal, orderHistory, currentOrders, removeOrderAndAddToHistory, userData, setUser, auth, setAuth, menus, setMenus, staffs, setStaffs, image, setImage, fetchedOrders, setFetchedOrders, updateOrderHistory, addToOrderHistory, logout, refreshToken, setRefreshToken }}>
+    <MenuContext.Provider
+      value={{
+        isModalVisible,
+        openModal,
+        closeModal,
+        orderHistory,
+        currentOrders,
+        removeOrderAndAddToHistory,
+        userData,
+        setUser,
+        auth,
+        setAuth,
+        menus,
+        setMenus,
+        staffs,
+        setStaffs,
+        image,
+        setImage,
+        fetchedOrders,
+        setFetchedOrders,
+        updateOrderHistory,
+        addToOrderHistory,
+        logout,
+        refreshToken,
+        setRefreshToken,
+      }}
+    >
       {children}
     </MenuContext.Provider>
   );

@@ -12,12 +12,17 @@ import {
   CookingPot,
   ShoppingCart,
 } from "phosphor-react";
-import { useMenuContext } from "../MainCode/SideBarLinkPage/Menus/MenuContext";
+// import { useMenuContext } from "../MainCode/SideBarLinkPage/Menus/MenuContext";
+import { Logout } from "../Features/kitchenSlice";
 import { useNavigate } from "react-router-dom";
 
+import { selectKitchen, useAppSelector, useAppDispatch } from "../Store/store";
+
 function Sidebar({ setSelectedMenuItem }) {
-  const { setUser, logout } = useMenuContext();
+  // const { setUserData, setLogout } = useMenuContext();
+  const { setUserData } = useAppSelector(selectKitchen);
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const handleMenuItemClick = (item) => {
     setSelectedMenuItem(item.key);
   };
@@ -26,10 +31,10 @@ function Sidebar({ setSelectedMenuItem }) {
     setLogoutModalVisible(true);
   };
 
-  const handleLogout = () => {
-    setUser(null);
+  const handleLogout = (e) => {
+    e.preventDefault();
+    dispatch(Logout());
     setLogoutModalVisible(false);
-    logout();
     navigate("/signIn");
   };
   const logoutModal = (

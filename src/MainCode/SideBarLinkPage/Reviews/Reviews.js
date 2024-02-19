@@ -10,10 +10,16 @@ import {
 import moment from "moment/moment";
 import profileUserImage from "../../../Components/Think.jpeg";
 import { GetReviews } from "../../../Features/kitchenSlice";
-import { useMenuContext } from "../Menus/MenuContext";
+import {
+  selectKitchen,
+  useAppSelector,
+  useAppDispatch,
+} from "../../../Store/store";
 
 function Reviews() {
-  const [reviews, setReviews] = useState([]);
+  const dispatch = useAppDispatch();
+  const { userData, reviews } = useAppSelector(selectKitchen);
+
   const [likedReviews, setLikedReviews] = useState({});
   const [dislikedReviews, setDislikedReviews] = useState({});
   const [showInput, setShowInput] = useState(false);
@@ -23,36 +29,15 @@ function Reviews() {
     useState(profileUserImage);
   const [hasReviews, setHasReviews] = useState(false);
   const [loading, setLoading] = useState(true);
-  const { userData, auth } = useMenuContext();
+  // const { userData, auth } = useMenuContext();
 
   useEffect(() => {
-    const fetchReviews = async () => {
-      try {
-        if (userData.Id) {
-          const response = await GetReviews(userData, auth);
-
-          if (Array.isArray(response.body) && response.body.length > 0) {
-            setReviews(response.body);
-            setHasReviews(true);
-          } else {
-            setReviews([]);
-            setHasReviews(false);
-          }
-        } else {
-          setReviews([]);
-          setHasReviews(false);
-        }
-      } catch (error) {
-        console.error(error);
-        setReviews([]);
-        setHasReviews(false);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchReviews();
-  }, [userData.Id]);
+    if (!reviews) {
+      const isBasicStaff = userData.Role === "basic";
+      const kitchenId = isBasicStaff ? userData.KitchenId : userData.Id;
+      dispatch(GetReviews(kitchenId));
+    }
+  }, [reviews]);
 
   function formatTimestampToDateString(timestamp) {
     const date = new Date(timestamp);
@@ -70,7 +55,6 @@ function Reviews() {
       updatedReviews[index].likeCount -= 1;
       setLikedReviews({ ...likedReviews, [index]: false });
     }
-    setReviews(updatedReviews);
   };
 
   const handleDislikeClick = (index) => {
@@ -84,7 +68,6 @@ function Reviews() {
       updatedReviews[index].dislikeCount -= 1;
       setDislikedReviews({ ...dislikedReviews, [index]: false });
     }
-    setReviews(updatedReviews);
   };
 
   const handleShowInputClick = () => {
@@ -104,7 +87,6 @@ function Reviews() {
 
     const updatedReviews = [...reviews, newReviewObj];
 
-    setReviews(updatedReviews);
     setNewComment("");
     setShowInput(false);
     setIsButtonDisabled(true);
