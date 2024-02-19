@@ -27,11 +27,11 @@ function SignIn() {
   };
 
   useEffect(() => {
-    if (notifyMessage.isSuccess === true) {
+    if (notifyMessage?.isSuccess === true) {
       delete notifyMessage.isSuccess;
       notification.success(notifyMessage);
       navigate("/home");
-    } else if (notifyMessage.isSuccess === false) {
+    } else if (notifyMessage?.isSuccess === false) {
       delete notifyMessage.isSuccess;
       notification.success(notifyMessage);
       if (notifyMessage.message === "Unverified email") {
