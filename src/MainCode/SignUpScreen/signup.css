@@ -1,0 +1,227 @@
+.rectangle {
+  width: 80%;
+  max-width: 600px;
+  margin: 0 auto;
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+  position: relative;
+  top: 80px;
+}
+
+label {
+  margin-bottom: 5px;
+  display: block;
+}
+  
+input {
+  padding: 5px;
+}
+
+.tab-header {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 20px;
+  background-color: #f2f2f2;
+}
+
+.tab-header button {
+  background-color: transparent;
+  border: none;
+  font-size: 13px;
+  padding: 10px;
+  cursor: pointer;
+  filter: blur(3px);
+}
+
+input[type="text"],
+input[type="email"],
+input[type="number"],
+input[type="password"] {
+  width: 70%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  border-color: blue;
+}
+
+label {
+  color: #c45628;
+  font-weight: bold;
+}
+
+.input-group {
+  margin-left: 7%;
+  margin-bottom: 1;
+}
+
+button[type="submit"] {
+  background-color: #3498db;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button[type="submit"]:hover {
+  background-color: #2980b9;
+}
+
+.tab-header {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+  background-color: #fff;
+  padding: 10px 0;
+}
+
+.tab-header button {
+  background-color: transparent;
+  color: #000;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  position: relative;
+  margin-top: -3%;
+}
+
+.tab-header button::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 3px;
+  background-color: #c45628;
+  transition: width 0.5s ease;
+}
+
+.tab-header button.active {
+  filter: none;
+  font-weight: bold;
+}
+
+.tab-header button.active::before {
+  width: 100%;
+}
+
+.button-container {
+  text-align: right;
+  margin-top: 20px;
+}
+
+.previous-button,
+.next-button,
+.submit-button {
+  background-color: #c45628;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out;
+  margin-left: 10px;
+}
+
+.previous-button:hover,
+.next-button:hover,
+.submit-button:hover {
+  background-color: #a2441e;
+}
+
+.next-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.fixed-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  z-index: 100;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.title {
+  color: #c45628;
+  font-size: 28px;
+  font-family: cursive;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  margin: 0;
+  cursor: pointer;
+}
+
+.sign-in-button {
+  background-color: #c45628;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out;
+}
+
+.sign-in-button:hover {
+  background-color: #a2441e;
+}
+
+.role-dropdown {
+  position: relative;
+}
+
+.role-dropdown select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 100%;
+  padding: 10px;
+  border: 2px solid #c45628;
+  border-radius: 5px;
+  background-color: #f2f2f2;
+  color: #333;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.role-dropdown::after {
+  content: '\25BC';
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  font-size: 18px;
+  color: #c45628;
+  pointer-events: none;
+}
+
+.role-dropdown select:hover {
+  background-color: #e0e0e0;
+}
+
+.password-toggle {
+  background-color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 10px;
+  margin-left: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.password-toggle:hover {
+  background-color: #007bff;
+  color: #fff;
+}
