@@ -152,7 +152,7 @@ export const Signin = (data) => async (dispatch) => {
           dispatch(
             setNotifyMessage({
               isSuccess: false,
-              message: "Unverified Email",
+              message: "Unverified email",
               description: "This User is not yet verified",
             })
           );
