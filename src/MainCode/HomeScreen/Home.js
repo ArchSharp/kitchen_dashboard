@@ -20,31 +20,16 @@ import {
 function Home() {
   const dispatch = useAppDispatch();
   const [selectedMenuItem, setSelectedMenuItem] = useState("/orders");
-  // const { auth, userData, refreshToken } = useMenuContext();
   const { intV, setIntV } = useState(10000);
   const navigate = useNavigate();
-  const { auth, userData, refreshToken, notifyMessage } =
+  const { userData, refreshToken, notifyMessage } =
     useAppSelector(selectKitchen);
 
   useEffect(() => {
-    let isMounted = true;
-
-    const fetchData = async () => {
-      if (!userData) {
-        if (auth?.accesstoken === undefined) {
-          navigate("/signIn");
-        } else if (auth?.accesstoken === null) {
-          navigate("/signIn");
-        }
-      }
-    };
-
-    fetchData();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [auth, navigate, userData]);
+    if (!userData) {
+      navigate("/signIn");
+    }
+  }, [userData, navigate]);
 
   useEffect(() => {
     const interval = setInterval(() => {

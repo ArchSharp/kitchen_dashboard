@@ -16,10 +16,14 @@ const kitchenSlice = createSlice({
     refreshToken: null,
     notifyMessage: { isSuccess: false, message: "", description: "" },
     staff: null,
+    allStaffs: null,
   },
   reducers: {
     setOrders: (state, actions) => {
       state.orders = actions.payload;
+    },
+    setAllStaffs: (state, actions) => {
+      state.allStaffs = actions.payload;
     },
     setStaff: (state, actions) => {
       state.staff = actions.payload;
@@ -56,6 +60,7 @@ const kitchenSlice = createSlice({
       state.notifyMessage = null;
       state.menus = null;
       state.orders = null;
+      state.allStaffs = null;
     },
   },
 });
@@ -72,6 +77,7 @@ export const {
   setUserData,
   setNotifyMessage,
   setRefreshToken,
+  setAllStaffs,
 } = kitchenSlice.actions;
 export default kitchenSlice.reducer;
 
@@ -152,31 +158,32 @@ export const SetMenus = (menus) => async (dispatch) => {
   dispatch(setMenus(menus));
 };
 
-export const SignUp = (data) => {
-  const dispatch = useAppDispatch();
+export const SignUp = (data) => async (dispatch) => {
+  dispatch(setLoading(true));
+  dispatch(clearErrors());
 
-  const handleSignIn = async () => {
-    dispatch(setLoading(true));
-    dispatch(clearErrors());
-
-    try {
-      const path = BASE_PATH + "/SignIn";
-      const response = await axios.post(path, data);
-      if (response) {
-        const responseData = response.data;
-        console.log("login response: ", responseData);
-        // Handle response data as needed
+  try {
+    const path = BASE_PATH + "/Create";
+    const response = await axios.post(path, data);
+    if (response) {
+      const data = response.data;
+      console.log("SignUp response: ", data);
+      if (data.code === 200) {
+        dispatch(
+          setNotifyMessage({
+            isSuccess: true,
+            message: "Sign Up Successful",
+            description: "Please check your email for the confirmation code.",
+          })
+        );
       }
-    } catch (error) {
-      console.log("login error response: ", error);
-      dispatch(setError(error?.message));
     }
+  } catch (error) {
+    console.log("SignUp error response: ", error);
+    dispatch(setError(error?.message));
+  }
 
-    dispatch(setLoading(false));
-  };
-
-  // Call handleSignIn when needed
-  return handleSignIn();
+  dispatch(setLoading(false));
 };
 
 export const ValidateBank = (data) => {
@@ -302,34 +309,36 @@ export const GetReviews = (kitchenId) => async (dispatch) => {
   dispatch(setLoading(false));
 };
 
-export const DeleteStaff = (data) => {
-  const dispatch = useAppDispatch();
+export const DeleteStaff = (staffEmail, KitchenEmail) => async (dispatch) => {
+  dispatch(setLoading(true));
+  dispatch(clearErrors());
 
-  const handleSignIn = async () => {
-    dispatch(setLoading(true));
-    dispatch(clearErrors());
-
-    try {
-      const path = BASE_PATH + "/SignIn";
-      const response = await axios.post(path, data);
-      if (response) {
-        const responseData = response.data;
-        console.log("login response: ", responseData);
-        // Handle response data as needed
+  try {
+    const path = `${BASE_PATH}/DeleteStaff?Email=${staffEmail}`;
+    const response = await axiosWithAuth.delete(path);
+    if (response) {
+      const data = response.data;
+      console.log("DeleteStaff response: ", data);
+      if (data.code === 200) {
+        dispatch(GetAllStaffs(KitchenEmail));
+        dispatch(
+          setNotifyMessage({
+            isSuccess: true,
+            message: "Deleted staff",
+            description: data?.body,
+          })
+        );
       }
-    } catch (error) {
-      console.log("login error response: ", error);
-      dispatch(setError(error?.message));
     }
+  } catch (error) {
+    console.log("DeleteStaff error response: ", error);
+    dispatch(setError(error?.message));
+  }
 
-    dispatch(setLoading(false));
-  };
-
-  // Call handleSignIn when needed
-  return handleSignIn();
+  dispatch(setLoading(false));
 };
 
-export const AddStaff = (data) => async (dispatch) => {
+export const AddStaff = (data, KitchenEmail) => async (dispatch) => {
   dispatch(setLoading(true));
   dispatch(clearErrors());
 
@@ -341,6 +350,14 @@ export const AddStaff = (data) => async (dispatch) => {
       console.log("AddStaff response: ", responseData);
       if (data.code === 200) {
         dispatch(setStaff(data?.body));
+        dispatch(GetAllStaffs(KitchenEmail));
+        dispatch(
+          setNotifyMessage({
+            isSuccess: true,
+            message: "Added staff",
+            description: "New staff has been added",
+          })
+        );
       }
     }
   } catch (error) {
@@ -530,7 +547,7 @@ export const GetNewToken = (data) => async (dispatch) => {
   try {
     const path =
       BASE_PATH +
-      `/GetNewAccessToken?Email=${data?.KitchenEmail}&&UserId=${data.Id}`;
+      `/GetNewAccessToken?Email=${data?.KitchenEmail}&&UserId=${data?.Id}`;
     const refresh = store.getState().kitchen.refreshToken;
     const response = await axiosAuth(refresh).get(path);
     if (response) {
@@ -576,31 +593,26 @@ export const NotifyEveryone = (data) => {
   return handleSignIn();
 };
 
-export const GetStaff = (data) => {
-  const dispatch = useAppDispatch();
+export const GetAllStaffs = (email) => async (dispatch) => {
+  dispatch(setLoading(true));
+  dispatch(clearErrors());
 
-  const handleSignIn = async () => {
-    dispatch(setLoading(true));
-    dispatch(clearErrors());
-
-    try {
-      const path = BASE_PATH + "/SignIn";
-      const response = await axios.post(path, data);
-      if (response) {
-        const responseData = response.data;
-        console.log("login response: ", responseData);
-        // Handle response data as needed
+  try {
+    const path = BASE_PATH + `/GetKitchenStaff?Email=${email}`;
+    const response = await axiosWithAuth.get(path);
+    if (response) {
+      const data = response.data;
+      console.log("GetAllStaffs response: ", data);
+      if (data.code === 200) {
+        dispatch(setAllStaffs(data?.body));
       }
-    } catch (error) {
-      console.log("login error response: ", error);
-      dispatch(setError(error?.message));
     }
+  } catch (error) {
+    console.log("GetAllStaffs error response: ", error);
+    dispatch(setError(error?.message));
+  }
 
-    dispatch(setLoading(false));
-  };
-
-  // Call handleSignIn when needed
-  return handleSignIn();
+  dispatch(setLoading(false));
 };
 
 export const DeleteMenu = (menuId, kitchenId) => async (dispatch) => {

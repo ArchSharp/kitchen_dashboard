@@ -30,8 +30,8 @@ function Header() {
 
   useEffect(() => {
     if (!reviews) {
-      const isBasicStaff = userData.Role === "basic";
-      const kitchenId = isBasicStaff ? userData.KitchenId : userData.Id;
+      const isBasicStaff = userData?.Role === "basic";
+      const kitchenId = isBasicStaff ? userData?.KitchenId : userData?.Id;
       dispatch(GetReviews(kitchenId));
     }
   }, []);

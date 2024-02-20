@@ -2,7 +2,7 @@ import Axios from "axios";
 import store from "../Store/store";
 import { GetNewToken } from "./kitchenSlice";
 
-const baseURL = "https://f5e2-102-88-63-209.ngrok-free.app/";
+const baseURL = "https://e860-102-88-63-174.ngrok-free.app/";
 
 export const axios = Axios.create({ baseURL, withCredentials: true });
 
@@ -19,7 +19,7 @@ export const axiosAuth = (refreshToken) => {
 const axiosWithAuth = Axios.create();
 
 axiosWithAuth.interceptors.request.use((config) => {
-  const token = store.getState().kitchen.auth.accesstoken;
+  const token = store.getState()?.kitchen?.auth?.accesstoken;
   config.baseURL = baseURL;
   config.timeout = 10000;
   config.headers.Authorization = `Bearer ${token}`;
@@ -38,7 +38,7 @@ axiosWithAuth.interceptors.response.use(
 
       // After getting a new token, retry the original request
       const config = error.config;
-      const newToken = store.getState().kitchen.auth.accesstoken;
+      const newToken = store.getState()?.kitchen?.auth?.accesstoken;
       config.timeout = 10000;
       config.headers.Authorization = `Bearer ${newToken}`;
       // console.log("config: ", config);

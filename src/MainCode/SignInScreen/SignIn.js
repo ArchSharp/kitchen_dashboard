@@ -12,11 +12,17 @@ import {
 function SignIn() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { notifyMessage } = useAppSelector(selectKitchen);
+  const { notifyMessage, userData } = useAppSelector(selectKitchen);
   const [formData, setFormData] = useState({
     Email: "",
     Password: "",
   });
+
+  useEffect(() => {
+    if (userData) {
+      navigate("/home");
+    }
+  }, [userData, navigate]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;

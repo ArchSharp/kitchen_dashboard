@@ -1,11 +1,23 @@
 import React, { useState, useEffect } from "react";
 import "./signup.css";
 import { Link } from "react-router-dom";
-import { SignUp, GetBank, ValidateBank } from "../../Features/kitchenSlice";
+import {
+  SignUp,
+  GetBank,
+  ValidateBank,
+  setNotifyMessage,
+} from "../../Features/kitchenSlice";
 import { Select, Modal, notification } from "antd";
 import { useNavigate } from "react-router-dom";
+import {
+  selectKitchen,
+  useAppSelector,
+  useAppDispatch,
+} from "../../Store/store";
 
 function Signup() {
+  const dispatch = useAppDispatch();
+  const { userData, notifyMessage } = useAppSelector(selectKitchen);
   const [bankNames, setBankNames] = useState([]);
   const [activeTab, setActiveTab] = useState(1);
   const navigate = useNavigate();
@@ -23,6 +35,12 @@ function Signup() {
     BankCode: "",
     BankName: "",
   });
+
+  useEffect(() => {
+    if (userData) {
+      navigate("/home");
+    }
+  }, [userData, navigate]);
 
   const handleTabChange = (tabNumber) => {
     if (tabNumber === activeTab + 1) {
@@ -100,35 +118,34 @@ function Signup() {
     }
   };
 
+  useEffect(() => {
+    if (notifyMessage?.isSuccess === true) {
+      var response = { ...notifyMessage };
+      delete response.isSuccess;
+      response = {
+        ...response,
+        onClose: () => dispatch(setNotifyMessage(null)),
+      };
+      notification.success(response);
+      navigate("/verifyEmail");
+    } else if (notifyMessage?.isSuccess === false && notifyMessage?.message) {
+      var response = { ...notifyMessage };
+      delete response.isSuccess;
+      response = {
+        ...response,
+        onClose: () => dispatch(setNotifyMessage(null)),
+      };
+      notification.error(response);
+    }
+  }, [navigate, dispatch, notifyMessage, formData]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const payload = {
       ...formData,
     };
-    try {
-      const response = await SignUp(payload);
-      console.log(response);
-      if (response.code === 200) {
-        notification.success({
-          message: "Sign Up Successful",
-          description: "Please check your email for the confirmation code.",
-        });
-        navigate("/verifyEmail");
-      } else {
-        notification.error({
-          message: "Sign Up Failed",
-          description: "An error occurred during sign-up. Please try again.",
-        });
-      }
-    } catch (error) {
-      console.error(error);
-      notification.error({
-        message: "Sign Up Failed",
-        description:
-          "An unexpected error occurred during sign-up. Please try again.",
-      });
-    }
-    console.log(formData);
+
+    dispatch(SignUp(payload));
   };
 
   const isFormValid = (tab) => {

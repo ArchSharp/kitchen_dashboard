@@ -11,7 +11,7 @@ import {
   AddStaff,
   UploadImage,
   DeleteStaff,
-  GetStaff,
+  GetAllStaffs,
 } from "../../../Features/kitchenSlice";
 import {
   selectKitchen,
@@ -21,11 +21,10 @@ import {
 
 function Settings() {
   const dispatch = useAppDispatch();
-  const { userData, auth, setStaffs, setImage, staff } =
+  const { userData, allStaffs, setImage, staff } =
     useAppSelector(selectKitchen);
   const [modalVisible, setModalVisible] = useState(false);
   const [addStaffModalVisible, setAddStaffModalVisible] = useState(false);
-  const [staffManagement, setStaffManagement] = useState([]);
   const [deleteStaffIndex, setDeleteStaffIndex] = useState(null);
   const [deleteConfirmationVisible, setDeleteConfirmationVisible] =
     useState(false);
@@ -70,21 +69,10 @@ function Settings() {
     setIsFormFilled(isFormValid());
   };
 
-  const fetchStaffData = async () => {
-    try {
-      const staffResponse = await GetStaff(userData, auth);
-
-      if (staffResponse.code === 200 && staffResponse.body) {
-        setStaffManagement(staffResponse.body);
-      } else {
-        console.error("Invalid staff response:", staffResponse);
-      }
-    } catch (error) {
-      console.error("Error fetching initial staff data:", error);
-    }
-  };
   useEffect(() => {
-    fetchStaffData();
+    if (!allStaffs) {
+      dispatch(GetAllStaffs(userData?.KitchenEmail));
+    }
   }, []);
 
   const handleUpload = async () => {
@@ -120,23 +108,7 @@ function Settings() {
       KitchenId: userData.Id,
     };
 
-    dispatch(AddStaff(staffData));
-    // console.log('StaffLog: ' ,response)
-    if (!staff) {
-      const { FirstName, LastName, Email, Password } = formData;
-      const username = `${FirstName} ${LastName}`;
-
-      const staffMember = {
-        username,
-        email: Email,
-        password: Password,
-      };
-      setStaffManagement([...staffManagement, staffMember]);
-      fetchStaffData();
-    }
-
-    setIsAddingStaff(false);
-    setAddStaffModalVisible(false);
+    dispatch(AddStaff(staffData, userData?.KitchenEmail));
   };
 
   const togglePasswordVisibility = (index) => {
@@ -146,23 +118,7 @@ function Settings() {
   };
 
   const handleDeleteStaff = async () => {
-    try {
-      const response = await DeleteStaff(staff.Email, auth);
-      console.log(response, "Deleted Staff");
-
-      if (response.data === `Staff with id ${staff.Email} has been deleted!`) {
-        await fetchStaffData();
-        const updatedStaffManagement = [...staffManagement];
-
-        updatedStaffManagement.splice(deleteStaffIndex, 1);
-        setStaffManagement(updatedStaffManagement);
-
-        setDeleteConfirmationVisible(false);
-        setDeleteStaffIndex(null);
-      }
-    } catch (error) {
-      console.error("Error deleting staff:", error);
-    }
+    dispatch(DeleteStaff(staff.Email, userData?.KitchenEmail));
   };
 
   const isBasicStaff = userData && userData.Role === "basic";
@@ -334,7 +290,7 @@ function Settings() {
       <div style={{ marginTop: "2rem" }}>
         <Card title="Staff Management" style={{ width: "60rem" }}>
           <ul>
-            {staffManagement.map((staff, index) => (
+            {allStaffs?.map((staff, index) => (
               <li key={index}>
                 {staff.FirstName} {staff.LastName} -{" "}
                 {staffShowPasswords[index] ? staff.Email : "******"}{" "}
