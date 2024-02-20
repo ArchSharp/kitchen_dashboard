@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Card } from "antd";
 import { Line } from "react-chartjs-2";
 import { GetKitchenOrders } from "../Features/kitchenSlice";
-import { useMenuContext } from "../MainCode/SideBarLinkPage/Menus/MenuContext";
+// import { useMenuContext } from "../MainCode/SideBarLinkPage/Menus/MenuContext";
+import { selectKitchen, useAppSelector, useAppDispatch } from "../Store/store";
 
 import {
   Chart as ChartJS,
@@ -26,10 +27,11 @@ ChartJS.register(
 );
 
 function DashboardChart({ loading }) {
+  const dispatch = useAppDispatch();
+  const { userData, auth, orders } = useAppSelector(selectKitchen);
   const [dailyRevenues, setDailyRevenues] = useState([]);
   const [monthlyRevenue, setMonthlyRevenue] = useState(null);
   const [historicalData, setHistoricalData] = useState([]);
-  const { userData, auth } = useMenuContext();
 
   const getMonthYear = () => {
     const currentDate = new Date();
@@ -40,39 +42,34 @@ function DashboardChart({ loading }) {
   };
 
   useEffect(() => {
+    if (!orders) {
+      dispatch(GetKitchenOrders(userData?.KitchenEmail));
+    }
+  }, []);
+
+  useEffect(() => {
     const fetchDailyRevenues = async () => {
-      try {
-        const response = await GetKitchenOrders(userData, auth);
+      if (!orders) {
+        const paidOrders = orders.filter((order) => order.IsPaid);
+        const dailyRevenueData = calculateDailyRevenue(paidOrders);
+        setDailyRevenues(dailyRevenueData);
 
-        if (response && response.code === 200) {
-          const orders = response.body.Orders;
+        const totalRevenueForMonth = dailyRevenueData.reduce(
+          (total, daily) => total + daily,
+          0
+        );
+        setMonthlyRevenue(totalRevenueForMonth);
 
-          const paidOrders = orders.filter((order) => order.IsPaid);
-
-          const dailyRevenueData = calculateDailyRevenue(paidOrders);
-          setDailyRevenues(dailyRevenueData);
-
-          const totalRevenueForMonth = dailyRevenueData.reduce(
-            (total, daily) => total + daily,
-            0
-          );
-          setMonthlyRevenue(totalRevenueForMonth);
-
-          const currentDate = new Date();
-          const monthYearKey = `${
-            currentDate.getMonth() + 1
-          }-${currentDate.getFullYear()}`;
-          const updatedHistoricalData = [...historicalData];
-          updatedHistoricalData.push({
-            monthYear: monthYearKey,
-            revenue: totalRevenueForMonth,
-          });
-          setHistoricalData(updatedHistoricalData);
-        } else {
-          console.error("Failed to fetch kitchen orders");
-        }
-      } catch (error) {
-        console.error("Error fetching kitchen orders", error);
+        const currentDate = new Date();
+        const monthYearKey = `${
+          currentDate.getMonth() + 1
+        }-${currentDate.getFullYear()}`;
+        const updatedHistoricalData = [...historicalData];
+        updatedHistoricalData.push({
+          monthYear: monthYearKey,
+          revenue: totalRevenueForMonth,
+        });
+        setHistoricalData(updatedHistoricalData);
       }
     };
 

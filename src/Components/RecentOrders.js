@@ -2,48 +2,52 @@ import React, { useEffect, useState } from "react";
 import { Card, Space, Statistic, Table, Typography } from "antd";
 import { GetKitchenOrders } from "../Features/kitchenSlice";
 import { useMenuContext } from "../MainCode/SideBarLinkPage/Menus/MenuContext";
+import { selectKitchen, useAppSelector, useAppDispatch } from "../Store/store";
+
 function RecentOrders() {
+  const dispatch = useAppDispatch();
+  const { userData, auth, orders } = useAppSelector(selectKitchen);
   const [dataSource, setDataSource] = useState([]);
   const [loading, setLoading] = useState(false);
-  const { userData, auth } = useMenuContext();
+  // const { userData, auth } = useMenuContext();
 
   useEffect(() => {
     setLoading(true);
 
     const fetchRecentOrders = async () => {
       try {
-        const response = await GetKitchenOrders(userData, auth);
+        if(!orders)dispatch(GetKitchenOrders(userData?.KitchenEmail));
 
-        if (response && response.code === 200) {
-          const orders = response.body.Orders;
-          if (orders && Array.isArray(orders)) {
-            const currentDate = new Date();
-            const currentDay = currentDate.getDate();
-            const currentMonth = currentDate.getMonth();
-            const currentYear = currentDate.getFullYear();
+        // if (response && response.code === 200) {
+        //   const orders = response.body.Orders;
+        //   if (orders && Array.isArray(orders)) {
+        //     const currentDate = new Date();
+        //     const currentDay = currentDate.getDate();
+        //     const currentMonth = currentDate.getMonth();
+        //     const currentYear = currentDate.getFullYear();
 
-            // Filter and display only paid orders
-            const recentOrders = orders.filter((order) => {
-              const orderDate = new Date(order.CreatedAt);
-              return (
-                orderDate.getDate() === currentDay &&
-                orderDate.getMonth() === currentMonth &&
-                orderDate.getFullYear() === currentYear &&
-                order.IsPaid === true
-              );
-            });
+        //     // Filter and display only paid orders
+        //     const recentOrders = orders.filter((order) => {
+        //       const orderDate = new Date(order.CreatedAt);
+        //       return (
+        //         orderDate.getDate() === currentDay &&
+        //         orderDate.getMonth() === currentMonth &&
+        //         orderDate.getFullYear() === currentYear &&
+        //         order.IsPaid === true
+        //       );
+        //     });
 
-            recentOrders.sort(
-              (a, b) => new Date(b.CreatedAt) - new Date(a.CreatedAt)
-            );
-            const firstFiveRecentOrders = recentOrders.slice(0, 5);
-            setDataSource(firstFiveRecentOrders);
-          } else {
-            console.error("No valid orders found in the response.");
-          }
-        } else {
-          console.error("Failed to fetch recent orders");
-        }
+        //     recentOrders.sort(
+        //       (a, b) => new Date(b.CreatedAt) - new Date(a.CreatedAt)
+        //     );
+        //     const firstFiveRecentOrders = recentOrders.slice(0, 5);
+        //     setDataSource(firstFiveRecentOrders);
+        //   } else {
+        //     console.error("No valid orders found in the response.");
+        //   }
+        // } else {
+        //   console.error("Failed to fetch recent orders");
+        // }
       } catch (error) {
         console.error("Error fetching recent orders", error);
       } finally {

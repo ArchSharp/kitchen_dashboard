@@ -15,10 +15,14 @@ const kitchenSlice = createSlice({
     userData: null,
     refreshToken: null,
     notifyMessage: { isSuccess: false, message: "", description: "" },
+    staff: null,
   },
   reducers: {
     setOrders: (state, actions) => {
       state.orders = actions.payload;
+    },
+    setStaff: (state, actions) => {
+      state.staff = actions.payload;
     },
     setIsModalVisible: (state, actions) => {
       state.isModalVisible = actions.payload;
@@ -56,6 +60,7 @@ const kitchenSlice = createSlice({
 
 export const {
   setLogout,
+  setStaff,
   setReviews,
   setMenus,
   setAuth,
@@ -322,31 +327,26 @@ export const DeleteStaff = (data) => {
   return handleSignIn();
 };
 
-export const AddStaff = (data) => {
-  const dispatch = useAppDispatch();
+export const AddStaff = (data) => async (dispatch) => {
+  dispatch(setLoading(true));
+  dispatch(clearErrors());
 
-  const handleSignIn = async () => {
-    dispatch(setLoading(true));
-    dispatch(clearErrors());
-
-    try {
-      const path = BASE_PATH + "/SignIn";
-      const response = await axios.post(path, data);
-      if (response) {
-        const responseData = response.data;
-        console.log("login response: ", responseData);
-        // Handle response data as needed
+  try {
+    const path = BASE_PATH + "/AddStaff";
+    const response = await axiosWithAuth.post(path, data);
+    if (response) {
+      const responseData = response.data;
+      console.log("AddStaff response: ", responseData);
+      if (data.code === 200) {
+        dispatch(setStaff(data?.body));
       }
-    } catch (error) {
-      console.log("login error response: ", error);
-      dispatch(setError(error?.message));
     }
+  } catch (error) {
+    console.log("AddStaff error response: ", error);
+    dispatch(setError(error?.message));
+  }
 
-    dispatch(setLoading(false));
-  };
-
-  // Call handleSignIn when needed
-  return handleSignIn();
+  dispatch(setLoading(false));
 };
 
 export const UploadImage = (data) => {

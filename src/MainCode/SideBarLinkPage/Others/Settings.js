@@ -7,15 +7,22 @@ import {
   EyeOutlined,
   DeleteOutlined,
 } from "@ant-design/icons";
-import { useMenuContext } from "../Menus/MenuContext";
 import {
   AddStaff,
   UploadImage,
   DeleteStaff,
   GetStaff,
 } from "../../../Features/kitchenSlice";
+import {
+  selectKitchen,
+  useAppSelector,
+  useAppDispatch,
+} from "../../../Store/store";
 
 function Settings() {
+  const dispatch = useAppDispatch();
+  const { userData, auth, setStaffs, setImage, staff } =
+    useAppSelector(selectKitchen);
   const [modalVisible, setModalVisible] = useState(false);
   const [addStaffModalVisible, setAddStaffModalVisible] = useState(false);
   const [staffManagement, setStaffManagement] = useState([]);
@@ -23,7 +30,6 @@ function Settings() {
   const [deleteConfirmationVisible, setDeleteConfirmationVisible] =
     useState(false);
   const [staffShowPasswords, setStaffShowPasswords] = useState([]);
-  const { userData, auth, setStaffs, setImage, staffs } = useMenuContext();
   const [formData, setFormData] = useState({
     FirstName: "",
     KitchenId: userData.Id,
@@ -108,38 +114,25 @@ function Settings() {
   };
 
   const handleAddStaff = async () => {
-    setIsAddingStaff(true);
+    const staffData = {
+      ...formData,
+      Role: "basic",
+      KitchenId: userData.Id,
+    };
 
-    try {
-      const staffData = {
-        ...formData,
-        Role: "basic",
-        KitchenId: userData.Id,
+    dispatch(AddStaff(staffData));
+    // console.log('StaffLog: ' ,response)
+    if (!staff) {
+      const { FirstName, LastName, Email, Password } = formData;
+      const username = `${FirstName} ${LastName}`;
+
+      const staffMember = {
+        username,
+        email: Email,
+        password: Password,
       };
-
-      const response = await AddStaff(staffData, auth);
-      // console.log('StaffLog: ' ,response)
-      if (response.code === 200) {
-        localStorage.setItem("staffs", JSON.stringify(response.body));
-        const { FirstName, LastName, Email, Password } = formData;
-        const username = `${FirstName} ${LastName}`;
-
-        const staffMember = {
-          username,
-          email: Email,
-          password: Password,
-        };
-        setStaffs(response.body);
-        setStaffManagement([...staffManagement, staffMember]);
-        fetchStaffData();
-        message.success("New Staff Added Successfully");
-      } else if (response.message === "Staff already exist") {
-        message.error("Staff already exist");
-      }
-    } catch (error) {
-      message.error(
-        "An error occurred while adding staff. Please try again later."
-      );
+      setStaffManagement([...staffManagement, staffMember]);
+      fetchStaffData();
     }
 
     setIsAddingStaff(false);
@@ -154,10 +147,10 @@ function Settings() {
 
   const handleDeleteStaff = async () => {
     try {
-      const response = await DeleteStaff(staffs.Email, auth);
+      const response = await DeleteStaff(staff.Email, auth);
       console.log(response, "Deleted Staff");
 
-      if (response.data === `Staff with id ${staffs.Email} has been deleted!`) {
+      if (response.data === `Staff with id ${staff.Email} has been deleted!`) {
         await fetchStaffData();
         const updatedStaffManagement = [...staffManagement];
 

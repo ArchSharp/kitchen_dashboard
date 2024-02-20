@@ -10,9 +10,15 @@ import RecentOrders from "../../../Components/RecentOrders";
 import DashboardChart from "../../../Components/DashboardChart";
 import { useEffect, useState } from "react";
 import { GetKitchenOrders, GetReviews } from "../../../Features/kitchenSlice";
-import { useMenuContext } from "../Menus/MenuContext";
+import {
+  selectKitchen,
+  useAppSelector,
+  useAppDispatch,
+} from "../../../Store/store";
 
 function Dashboard() {
+  const dispatch = useAppDispatch();
+  const { userData, auth, orders } = useAppSelector(selectKitchen);
   const [mostOrderedFood, setMostOrderedFood] = useState("");
   const [totalOrders, setTotalOrders] = useState(0);
   const [totalCustomers, setTotalCustomers] = useState(0);
@@ -23,8 +29,6 @@ function Dashboard() {
   const [previousDayTotalReviews, setPreviousDayTotalReviews] = useState(0);
   const [previousDayTotalRevenue, setPreviousDayTotalRevenue] = useState(0);
   const [dailyOrdersCount, setDailyOrdersCount] = useState(0);
-
-  const { userData, auth } = useMenuContext();
 
   const getPreviousDayTotalOrders = () => {
     const storedOrders = localStorage.getItem("totalOrders");
@@ -70,135 +74,130 @@ function Dashboard() {
   }
 
   useEffect(() => {
+    if (!orders) {
+      dispatch(GetKitchenOrders(userData?.KitchenEmail));
+    }
+  }, []);
+
+  useEffect(() => {
     const fetchKitchenOrders = async () => {
-      try {
-        const response = await GetKitchenOrders(userData, auth);
-        if (response && response.code === 200) {
-          const orders = response.body.Orders;
-          const currentDateTodays = new Date();
-          const currentDateOkay = new Date();
+      if (!orders) {
+        const currentDateTodays = new Date();
+        const currentDateOkay = new Date();
 
-          const currentDayOrders = orders.filter((order) => {
-            const orderDate = new Date(order.CreatedAt);
-            return (
-              orderDate.getDate() === currentDateTodays.getDate() &&
-              orderDate.getMonth() === currentDateTodays.getMonth() &&
-              orderDate.getFullYear() === currentDateTodays.getFullYear()
-            );
-          });
-
-          const paidOrders = currentDayOrders.filter(
-            (order) => order.IsPaid === true
+        const currentDayOrders = orders.filter((order) => {
+          const orderDate = new Date(order.CreatedAt);
+          return (
+            orderDate.getDate() === currentDateTodays.getDate() &&
+            orderDate.getMonth() === currentDateTodays.getMonth() &&
+            orderDate.getFullYear() === currentDateTodays.getFullYear()
           );
-          setTotalOrders(paidOrders.length);
+        });
 
-          const currentMonthOrders = orders.filter((order) => {
-            const orderDate = new Date(order.CreatedAt);
-            return (
-              orderDate.getMonth() === currentDateOkay.getMonth() &&
-              orderDate.getFullYear() === currentDateOkay.getFullYear()
-            );
-          });
+        const paidOrders = currentDayOrders.filter(
+          (order) => order.IsPaid === true
+        );
+        setTotalOrders(paidOrders.length);
 
-          const monthlyOrders = currentMonthOrders.filter(
-            (order) => order.IsPaid === true
+        const currentMonthOrders = orders.filter((order) => {
+          const orderDate = new Date(order.CreatedAt);
+          return (
+            orderDate.getMonth() === currentDateOkay.getMonth() &&
+            orderDate.getFullYear() === currentDateOkay.getFullYear()
           );
-          if (monthlyOrders.length > 0) {
-            const totalRevenueForMonth = calculateTotalRevenue(monthlyOrders);
-            setTotalRevenue(totalRevenueForMonth);
-          } else {
-            setTotalRevenue(0);
-          }
+        });
 
-          const currentDateToday = new Date();
-          const dailyOrders = calculateDailyOrders(orders, currentDateToday);
-          setDailyOrdersCount(dailyOrders);
-
-          const previousDayTotal = getPreviousDayTotalOrders();
-
-          const currentDate = new Date();
-          const totalCustomersForCurrentDate =
-            calculateTotalCustomersForCurrentDate(orders, currentDate, true);
-          setTotalCustomers(totalCustomersForCurrentDate);
-
-          const reviewsResponse = await GetReviews(userData, auth);
-          if (reviewsResponse && reviewsResponse.code === 200) {
-            const reviews = reviewsResponse.body;
-
-            const totalReviewsReceived = reviews ? reviews.length : 0;
-
-            setTotalReviews(totalReviewsReceived);
-
-            const previousDayTotalReviews = getPreviousDayTotalReviews();
-            setPreviousDayTotalReviews(previousDayTotalReviews);
-
-            localStorage.setItem(
-              "totalReviews",
-              totalReviewsReceived.toString()
-            );
-          } else {
-            console.error("Failed to fetch kitchen reviews");
-          }
-
-          const totalRevenueReceived = calculateTotalRevenue(orders);
-          setTotalRevenue(totalRevenueReceived);
-          const previousDayTotalRevenue = getPreviousDayTotalRevenue();
-          setPreviousDayTotalRevenue(previousDayTotalRevenue);
-          localStorage.setItem("totalRevenue", totalRevenueReceived.toString());
-
-          const mostOrderedFoodMap = orders.reduce((foodCountMap, order) => {
-            const orderDate = new Date(order.CreatedAt);
-            if (
-              orderDate.getDate() === currentDateToday.getDate() &&
-              orderDate.getMonth() === currentDateToday.getMonth() &&
-              orderDate.getFullYear() === currentDateToday.getFullYear() &&
-              order.IsPaid === true
-            ) {
-              order.Items.forEach((item) => {
-                const { Name } = item;
-                if (foodCountMap[Name]) {
-                  foodCountMap[Name] += 1;
-                } else {
-                  foodCountMap[Name] = 1;
-                }
-              });
-            }
-            return foodCountMap;
-          }, {});
-
-          const mostOrdered =
-            Object.keys(mostOrderedFoodMap).length > 0
-              ? Object.keys(mostOrderedFoodMap).reduce((mostOrdered, food) => {
-                  if (
-                    !mostOrdered ||
-                    mostOrderedFoodMap[food] > mostOrderedFoodMap[mostOrdered]
-                  ) {
-                    return food;
-                  }
-                  return mostOrdered;
-                }, null)
-              : "NILL";
-
-          setMostOrderedFood(mostOrdered);
-
-          setPreviousDayTotalOrders(previousDayTotal);
-
-          const previousDayTotalCustomers = getPreviousDayTotalCustomers();
-          setPreviousDayTotalCustomers(previousDayTotalCustomers);
-
-          setPreviousDayTotalRevenue(previousDayTotalRevenue);
-
-          // localStorage.setItem('totalOrders', totalOrdersReceived.toString());
-          localStorage.setItem(
-            "totalCustomers",
-            totalCustomersForCurrentDate.toString()
-          );
-          localStorage.setItem("totalRevenue", totalRevenueReceived.toString());
+        const monthlyOrders = currentMonthOrders.filter(
+          (order) => order.IsPaid === true
+        );
+        if (monthlyOrders.length > 0) {
+          const totalRevenueForMonth = calculateTotalRevenue(monthlyOrders);
+          setTotalRevenue(totalRevenueForMonth);
         } else {
-          console.error("Failed to fetch kitchen orders");
+          setTotalRevenue(0);
         }
-      } catch (error) {
-        console.error("Error fetching kitchen orders", error);
+
+        const currentDateToday = new Date();
+        const dailyOrders = calculateDailyOrders(orders, currentDateToday);
+        setDailyOrdersCount(dailyOrders);
+
+        const previousDayTotal = getPreviousDayTotalOrders();
+
+        const currentDate = new Date();
+        const totalCustomersForCurrentDate =
+          calculateTotalCustomersForCurrentDate(orders, currentDate, true);
+        setTotalCustomers(totalCustomersForCurrentDate);
+
+        const reviewsResponse = await GetReviews(userData, auth);
+        if (reviewsResponse && reviewsResponse.code === 200) {
+          const reviews = reviewsResponse.body;
+
+          const totalReviewsReceived = reviews ? reviews.length : 0;
+
+          setTotalReviews(totalReviewsReceived);
+
+          const previousDayTotalReviews = getPreviousDayTotalReviews();
+          setPreviousDayTotalReviews(previousDayTotalReviews);
+
+          localStorage.setItem("totalReviews", totalReviewsReceived.toString());
+        } else {
+          console.error("Failed to fetch kitchen reviews");
+        }
+
+        const totalRevenueReceived = calculateTotalRevenue(orders);
+        setTotalRevenue(totalRevenueReceived);
+        const previousDayTotalRevenue = getPreviousDayTotalRevenue();
+        setPreviousDayTotalRevenue(previousDayTotalRevenue);
+        localStorage.setItem("totalRevenue", totalRevenueReceived.toString());
+
+        const mostOrderedFoodMap = orders.reduce((foodCountMap, order) => {
+          const orderDate = new Date(order.CreatedAt);
+          if (
+            orderDate.getDate() === currentDateToday.getDate() &&
+            orderDate.getMonth() === currentDateToday.getMonth() &&
+            orderDate.getFullYear() === currentDateToday.getFullYear() &&
+            order.IsPaid === true
+          ) {
+            order.Items.forEach((item) => {
+              const { Name } = item;
+              if (foodCountMap[Name]) {
+                foodCountMap[Name] += 1;
+              } else {
+                foodCountMap[Name] = 1;
+              }
+            });
+          }
+          return foodCountMap;
+        }, {});
+
+        const mostOrdered =
+          Object.keys(mostOrderedFoodMap).length > 0
+            ? Object.keys(mostOrderedFoodMap).reduce((mostOrdered, food) => {
+                if (
+                  !mostOrdered ||
+                  mostOrderedFoodMap[food] > mostOrderedFoodMap[mostOrdered]
+                ) {
+                  return food;
+                }
+                return mostOrdered;
+              }, null)
+            : "NILL";
+
+        setMostOrderedFood(mostOrdered);
+
+        setPreviousDayTotalOrders(previousDayTotal);
+
+        const previousDayTotalCustomers = getPreviousDayTotalCustomers();
+        setPreviousDayTotalCustomers(previousDayTotalCustomers);
+
+        setPreviousDayTotalRevenue(previousDayTotalRevenue);
+
+        // localStorage.setItem('totalOrders', totalOrdersReceived.toString());
+        localStorage.setItem(
+          "totalCustomers",
+          totalCustomersForCurrentDate.toString()
+        );
+        localStorage.setItem("totalRevenue", totalRevenueReceived.toString());
       }
     };
     fetchKitchenOrders();
