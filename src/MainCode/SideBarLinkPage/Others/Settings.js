@@ -73,7 +73,7 @@ function Settings() {
     if (!allStaffs) {
       dispatch(GetAllStaffs(userData?.KitchenEmail));
     }
-  }, []);
+  }, [allStaffs, dispatch, userData]);
 
   const handleUpload = async () => {
     try {

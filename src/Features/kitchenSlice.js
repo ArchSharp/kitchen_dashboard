@@ -266,20 +266,36 @@ export const GetBank = () => async (dispatch) => {
   dispatch(setLoading(false));
 };
 
-export const ResendVerifyEmail = (data) => async (dispatch) => {
+export const ResendVerifyEmail = (email) => async (dispatch) => {
   dispatch(setLoading(true));
   dispatch(clearErrors());
 
   try {
-    const path = BASE_PATH + "/SignIn";
-    const response = await axios.post(path, data);
+    const path = BASE_PATH + `/ResendVerifyEmail?Email=${email}`;
+    const response = await axios.get(path);
     if (response) {
-      const responseData = response.data;
-      console.log("login response: ", responseData);
-      // Handle response data as needed
+      const data = response.data;
+      console.log("ResendVerifyEmail response: ", data);
+      if (data.code === 200) {
+        dispatch(
+          setNotifyMessage({
+            isSuccess: true,
+            message: "Email Resent",
+            description:
+              "Email verification link has been resent. Check your email.",
+          })
+        );
+      }
     }
   } catch (error) {
-    console.log("login error response: ", error);
+    console.log("ResendVerifyEmail error response: ", error);
+    dispatch(
+      setNotifyMessage({
+        isSuccess: false,
+        message: "Resend Email Failed",
+        description: "An error occurred while resending the email.",
+      })
+    );
     dispatch(setError(error?.message));
   }
 

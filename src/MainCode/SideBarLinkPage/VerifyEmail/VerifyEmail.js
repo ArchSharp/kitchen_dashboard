@@ -45,7 +45,6 @@ function Verifymail() {
         onClose: () => dispatch(setNotifyMessage(null)),
       };
       notification.success(response);
-
       navigate("/signIn");
     } else if (notifyMessage?.isSuccess === false && notifyMessage?.message) {
       response = { ...notifyMessage };
@@ -72,32 +71,7 @@ function Verifymail() {
   };
 
   const handleResendEmail = async () => {
-    try {
-      const payload = {
-        Email: formData.Email,
-      };
-
-      const response = await ResendVerifyEmail(payload);
-      console.log(response);
-      if (response.code === 200) {
-        notification.success({
-          message: "Email Resent",
-          description:
-            "Email verification link has been resent. Check your email.",
-        });
-      } else {
-        notification.error({
-          message: "Resend Email Failed",
-          description: "An error occurred while resending the email.",
-        });
-      }
-    } catch (error) {
-      console.log(error);
-      notification.error({
-        message: "Internal Server Error",
-        description: "An error occurred while processing your request.",
-      });
-    }
+    dispatch(ResendVerifyEmail(formData.Email));
   };
 
   return (
