@@ -13,7 +13,7 @@ import {
   ShoppingCart,
 } from "phosphor-react";
 // import { useMenuContext } from "../MainCode/SideBarLinkPage/Menus/MenuContext";
-import { Logout } from "../Features/kitchenSlice";
+import { setLogout } from "../Features/kitchenSlice";
 import { useNavigate } from "react-router-dom";
 
 import { selectKitchen, useAppSelector, useAppDispatch } from "../Store/store";
@@ -33,7 +33,7 @@ function Sidebar({ setSelectedMenuItem }) {
 
   const handleLogout = (e) => {
     e.preventDefault();
-    dispatch(Logout());
+    dispatch(setLogout(null));
     setLogoutModalVisible(false);
     navigate("/signIn");
   };

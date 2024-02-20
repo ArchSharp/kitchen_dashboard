@@ -16,6 +16,7 @@ import {
   UpdateMenu,
   DeleteMenu,
   GetKitchenMenus,
+  setIsModalVisible,
 } from "../../../Features/kitchenSlice";
 import moment from "moment";
 import {
@@ -23,11 +24,6 @@ import {
   useAppSelector,
   useAppDispatch,
 } from "../../../Store/store";
-import {
-  openModal,
-  closeModal,
-  SetMenus,
-} from "../../../Features/kitchenSlice";
 
 const { Column } = Table;
 const { Search } = Input;
@@ -103,7 +99,7 @@ const MenuScreen = () => {
     };
 
     dispatch(CreateMenu(userData, newValues));
-    dispatch(closeModal());
+    dispatch(setIsModalVisible(false));
   };
 
   const handleEdit = (record) => {
@@ -197,7 +193,7 @@ const MenuScreen = () => {
           <Button
             type="primary"
             style={{ marginLeft: "auto", marginTop: "1rem" }}
-            onClick={() => dispatch(openModal())}
+            onClick={() => dispatch(setIsModalVisible(true))}
           >
             Add a new menu
           </Button>
@@ -249,7 +245,7 @@ const MenuScreen = () => {
       <Modal
         title="Add a new menu"
         open={isModalVisible}
-        onCancel={() => dispatch(closeModal())}
+        onCancel={() => dispatch(setIsModalVisible(false))}
         footer={null}
       >
         <Form onFinish={handleFormSubmit}>

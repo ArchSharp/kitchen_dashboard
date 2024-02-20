@@ -68,7 +68,7 @@ const kitchenSlice = createSlice({
     setNotifyMessage: (state, actions) => {
       state.notifyMessage = actions.payload;
     },
-    setLogout: (state) => {
+    setLogout: (state, actions) => {
       state.auth = null;
       state.isLoading = false;
       state.userData = null;
@@ -164,22 +164,6 @@ export const Signin = (data) => async (dispatch) => {
     dispatch(setError(error?.message));
   }
   dispatch(setLoading(false));
-};
-
-export const Logout = () => async (dispatch) => {
-  dispatch(setLogout());
-};
-
-export const openModal = () => async (dispatch) => {
-  dispatch(setIsModalVisible(true));
-};
-
-export const closeModal = () => async (dispatch) => {
-  dispatch(setIsModalVisible(false));
-};
-
-export const SetMenus = (menus) => async (dispatch) => {
-  dispatch(setMenus(menus));
 };
 
 export const SignUp = (data) => async (dispatch) => {
@@ -282,31 +266,24 @@ export const GetBank = () => async (dispatch) => {
   dispatch(setLoading(false));
 };
 
-export const ResendVerifyEmail = (data) => {
-  const dispatch = useAppDispatch();
+export const ResendVerifyEmail = (data) => async (dispatch) => {
+  dispatch(setLoading(true));
+  dispatch(clearErrors());
 
-  const handleSignIn = async () => {
-    dispatch(setLoading(true));
-    dispatch(clearErrors());
-
-    try {
-      const path = BASE_PATH + "/SignIn";
-      const response = await axios.post(path, data);
-      if (response) {
-        const responseData = response.data;
-        console.log("login response: ", responseData);
-        // Handle response data as needed
-      }
-    } catch (error) {
-      console.log("login error response: ", error);
-      dispatch(setError(error?.message));
+  try {
+    const path = BASE_PATH + "/SignIn";
+    const response = await axios.post(path, data);
+    if (response) {
+      const responseData = response.data;
+      console.log("login response: ", responseData);
+      // Handle response data as needed
     }
+  } catch (error) {
+    console.log("login error response: ", error);
+    dispatch(setError(error?.message));
+  }
 
-    dispatch(setLoading(false));
-  };
-
-  // Call handleSignIn when needed
-  return handleSignIn();
+  dispatch(setLoading(false));
 };
 
 export const VerifyEmail = (payload) => async (dispatch) => {
