@@ -54,6 +54,8 @@ const kitchenSlice = createSlice({
       state.userData = null;
       state.refreshToken = null;
       state.notifyMessage = null;
+      state.menus = null;
+      state.orders = null;
     },
   },
 });

@@ -33,12 +33,6 @@ axiosWithAuth.interceptors.response.use(
   },
   async (error) => {
     if (error?.response && error.response.status === 401) {
-      //   var msg = {
-      //     showAlert: true,
-      //     content: "Token has expired, please sign in to continue",
-      //   };
-      //   await store.dispatch(setShowAlert(msg));
-      //   await store.dispatch(setISAuth(false));
       const user = store.getState().kitchen.userData;
       await store.dispatch(GetNewToken(user));
 
