@@ -43,7 +43,7 @@ function SignIn() {
       notification.success(response);
       navigate("/home");
     } else if (notifyMessage?.isSuccess === false && notifyMessage?.message) {
-      var response = { ...notifyMessage };
+      response = { ...notifyMessage };
       delete response.isSuccess;
       response = {
         ...response,

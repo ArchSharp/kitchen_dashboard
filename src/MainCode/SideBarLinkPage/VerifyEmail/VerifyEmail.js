@@ -6,7 +6,7 @@ import {
   ResendVerifyEmail,
   setNotifyMessage,
 } from "../../../Features/kitchenSlice";
-import { message, notification } from "antd";
+import { notification } from "antd";
 import {
   selectKitchen,
   useAppSelector,
@@ -48,7 +48,7 @@ function Verifymail() {
 
       navigate("/signIn");
     } else if (notifyMessage?.isSuccess === false && notifyMessage?.message) {
-      var response = { ...notifyMessage };
+      response = { ...notifyMessage };
       delete response.isSuccess;
       response = {
         ...response,

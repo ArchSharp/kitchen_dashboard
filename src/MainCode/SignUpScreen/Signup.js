@@ -7,7 +7,6 @@ import {
   ValidateBank,
   setNotifyMessage,
   setIsVerifyingBank,
-  setIsBankVerified,
   setBankAccount,
 } from "../../Features/kitchenSlice";
 import { Select, Modal, notification } from "antd";
