@@ -148,7 +148,7 @@ export const Signin = (data) => async (dispatch) => {
                 "This User is not found. Check your login credentials again",
             })
           );
-        } else if (response.message === "Unverified email") {
+        } else if (data.message === "Unverified email") {
           dispatch(
             setNotifyMessage({
               isSuccess: false,
