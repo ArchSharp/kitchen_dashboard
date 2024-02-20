@@ -30,9 +30,7 @@ const { Option } = Select;
 const Orders = () => {
   const dispatch = useAppDispatch();
   const { userData, auth, orders } = useAppSelector(selectKitchen);
-  // const [orders, setOrders] = useState([]);
 
-  // const [fetchedOrders, setFetchedOrders] = useState(orders);
   const [currentOrderIndex, setCurrentOrderIndex] = useState(0);
   const [attendedOrders, setAttendedOrders] = useState([]);
   const [doneAndPackagedOrders, setDoneAndPackagedOrders] = useState([]);
@@ -122,20 +120,20 @@ const Orders = () => {
     if (userData) {
       dispatch(GetKitchenOrders(userData?.KitchenEmail));
 
-      const sortedMenus = orders.sort((a, b) => {
+      const sortedMenus = orders?.sort((a, b) => {
         return moment(b.CreatedAt).valueOf() - moment(a.CreatedAt).valueOf();
       });
 
-      const filteredOrdersForToday = sortedMenus.filter((order) => {
+      const filteredOrdersForToday = sortedMenus?.filter((order) => {
         const orderDate = moment(order.CreatedAt);
         return today === orderDate.date();
       });
 
-      filteredOrdersForToday.forEach((order, index) => {
+      filteredOrdersForToday?.forEach((order, index) => {
         order.OrderNumber = index + 1;
       });
 
-      setOrderNumber(orderNumber + orders.length);
+      setOrderNumber(orderNumber + orders?.length);
     }
   };
 
