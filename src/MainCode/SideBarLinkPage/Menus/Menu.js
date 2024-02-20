@@ -30,13 +30,13 @@ const { Search } = Input;
 
 const MenuScreen = () => {
   const dispatch = useAppDispatch();
-  const { userData, auth, menus, isModalVisible } =
+  const { userData, isLoading, menus, isModalVisible } =
     useAppSelector(selectKitchen);
   const [menuItems, setMenuItems] = useState([]);
   const [newMenuAlertVisible, setNewMenuAlertVisible] = useState(false);
   const [editMenuAlertVisible, setEditMenuAlertVisible] = useState(false);
   const [deleteMenuAlertVisible, setDeleteMenuAlertVisible] = useState(false);
-  const [loading, setLoading] = useState(false);
+
   const [editItem, setEditItem] = useState(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [searchText, setSearchText] = useState("");
@@ -390,7 +390,7 @@ const MenuScreen = () => {
               justifyContent: "center",
               alignItems: "center",
             }}
-            loading={loading}
+            loading={isLoading}
           >
             Add
           </Button>
@@ -486,7 +486,7 @@ const MenuScreen = () => {
               justifyContent: "center",
               alignItems: "center",
             }}
-            loading={loading}
+            loading={isLoading}
           >
             Save
           </Button>

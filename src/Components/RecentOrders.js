@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Card, Space, Statistic, Table, Typography } from "antd";
 import { GetKitchenOrders } from "../Features/kitchenSlice";
-import { useMenuContext } from "../MainCode/SideBarLinkPage/Menus/MenuContext";
 import { selectKitchen, useAppSelector, useAppDispatch } from "../Store/store";
 
 function RecentOrders() {
@@ -9,14 +8,13 @@ function RecentOrders() {
   const { userData, auth, orders } = useAppSelector(selectKitchen);
   const [dataSource, setDataSource] = useState([]);
   const [loading, setLoading] = useState(false);
-  // const { userData, auth } = useMenuContext();
 
   useEffect(() => {
     setLoading(true);
 
     const fetchRecentOrders = async () => {
       try {
-        if(!orders)dispatch(GetKitchenOrders(userData?.KitchenEmail));
+        if (!orders) dispatch(GetKitchenOrders(userData?.KitchenEmail));
 
         // if (response && response.code === 200) {
         //   const orders = response.body.Orders;

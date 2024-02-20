@@ -13,7 +13,6 @@ import {
   Select,
   notification,
 } from "antd";
-import { useMenuContext } from "../Menus/MenuContext";
 import moment from "moment";
 import {
   GetKitchenOrders,
@@ -29,7 +28,6 @@ const { Panel } = Collapse;
 const { Option } = Select;
 
 const Orders = () => {
-  // const { userData, auth } = useMenuContext();
   const dispatch = useAppDispatch();
   const { userData, auth, orders } = useAppSelector(selectKitchen);
   // const [orders, setOrders] = useState([]);
@@ -142,8 +140,8 @@ const Orders = () => {
   };
 
   useEffect(() => {
-    // fetchOrders();
-    const intervalId = setInterval(fetchOrders, 200000);
+    fetchOrders();
+    const intervalId = setInterval(fetchOrders, 2000);
     return () => clearInterval(intervalId);
   }, [auth]);
 
