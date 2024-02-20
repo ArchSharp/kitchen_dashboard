@@ -43,14 +43,13 @@ axiosWithAuth.interceptors.response.use(
       await store.dispatch(GetNewToken(user));
 
       // After getting a new token, retry the original request
-      //   const config = error.config;
-      //   const newToken = store.getState().user.token;
-      //   config.timeout = 15000;
-      //   config.headers.Authorization = `Bearer ${newToken}`;
-      //   console.log("config: ", config);
+      const config = error.config;
+      const newToken = store.getState().kitchen.auth.accesstoken;
+      config.timeout = 10000;
+      config.headers.Authorization = `Bearer ${newToken}`;
+      // console.log("config: ", config);
 
-      //   return Axios(config);
-      return null;
+      return Axios(config);
     }
     return Promise.reject(error);
   }
