@@ -6,7 +6,9 @@ import axiosWithAuth, { axios, axiosAuth } from "../Features/utils";
 const kitchenSlice = createSlice({
   name: "kitchen",
   initialState: {
+    banks: null,
     orders: null,
+    isBankVerified: null,
     isModalVisible: false,
     menus: null,
     reviews: null,
@@ -17,8 +19,22 @@ const kitchenSlice = createSlice({
     notifyMessage: { isSuccess: false, message: "", description: "" },
     staff: null,
     allStaffs: null,
+    isVerifyingBank: false,
+    bankAccount: null,
   },
   reducers: {
+    setIsBankVerified: (state, actions) => {
+      state.isBankVerified = actions.payload;
+    },
+    setBanks: (state, actions) => {
+      state.banks = actions.payload;
+    },
+    setBankAccount: (state, actions) => {
+      state.bankAccount = actions.payload;
+    },
+    setIsVerifyingBank: (state, actions) => {
+      state.isVerifyingBank = actions.payload;
+    },
     setOrders: (state, actions) => {
       state.orders = actions.payload;
     },
@@ -61,6 +77,10 @@ const kitchenSlice = createSlice({
       state.menus = null;
       state.orders = null;
       state.allStaffs = null;
+      state.banks = null;
+      state.isVerifyingBank = false;
+      state.bankAccount = null;
+      state.isBankVerified = false;
     },
   },
 });
@@ -71,12 +91,16 @@ export const {
   setReviews,
   setMenus,
   setAuth,
+  setBankAccount,
   setOrders,
+  setIsBankVerified,
   setIsModalVisible,
+  setIsVerifyingBank,
   setLoading,
   setUserData,
   setNotifyMessage,
   setRefreshToken,
+  setBanks,
   setAllStaffs,
 } = kitchenSlice.actions;
 export default kitchenSlice.reducer;
@@ -186,47 +210,72 @@ export const SignUp = (data) => async (dispatch) => {
   dispatch(setLoading(false));
 };
 
-export const ValidateBank = (data) => {
-  const dispatch = useAppDispatch();
+export const ValidateBank = (data) => async (dispatch) => {
+  dispatch(setLoading(true));
+  dispatch(clearErrors());
+  dispatch(setIsVerifyingBank(true));
+  try {
+    const payload = {
+      AccountNumber: data.AccountNumber,
+      BankCode: data.BankCode,
+      ShouldProceed: data.ShouldProceed,
+    };
 
-  const handleSignIn = async () => {
-    dispatch(setLoading(true));
-    dispatch(clearErrors());
-
-    try {
-      const path = BASE_PATH + "/SignIn";
-      const response = await axios.post(path, data);
-      if (response) {
-        const responseData = response.data;
-        console.log("login response: ", responseData);
-        // Handle response data as needed
+    const path = BASE_PATH + `/ValidateKitchenBank?Email=${data.KitchenEmail}`;
+    const response = await axios.post(path, payload);
+    if (response) {
+      const data = response.data;
+      console.log("ValidateBank response: ", data);
+      if (data?.status === true) {
+        dispatch(setBankAccount(data?.data));
+      } else if (data?.code === 200) {
+        dispatch(setIsBankVerified(true));
+        dispatch(
+          setNotifyMessage({
+            isSuccess: true,
+            message: "Bank Account verified",
+            description: "Your bank account has been verified successfully.",
+          })
+        );
       }
-    } catch (error) {
-      console.log("login error response: ", error);
-      dispatch(setError(error?.message));
     }
-
-    dispatch(setLoading(false));
-  };
-
-  // Call handleSignIn when needed
-  return handleSignIn();
+  } catch (error) {
+    console.log("ValidateBank error response: ", error);
+    const err = error?.response?.data;
+    if (
+      err?.message ===
+      "Could not verify account, kindly check if your account number is correct"
+    ) {
+      dispatch(
+        setNotifyMessage({
+          isSuccess: false,
+          message: "Bank Verification failed",
+          description: err?.message,
+        })
+      );
+    }
+    dispatch(setError(error?.message));
+  }
+  dispatch(setIsVerifyingBank(false));
+  dispatch(setLoading(false));
 };
 
-export const GetBank = (data) => async (dispatch) => {
+export const GetBank = () => async (dispatch) => {
   dispatch(setLoading(true));
   dispatch(clearErrors());
 
   try {
-    const path = BASE_PATH + "/SignIn";
-    const response = await axios.post(path, data);
+    const path = BASE_PATH + "/GetBanks";
+    const response = await axios.get(path);
     if (response) {
-      const responseData = response.data;
-      console.log("login response: ", responseData);
-      // Handle response data as needed
+      const data = response.data;
+      console.log("GetBank response: ", data);
+      if (data.status === true) {
+        dispatch(setBanks(data?.data));
+      }
     }
   } catch (error) {
-    console.log("login error response: ", error);
+    console.log("GetBank error response: ", error);
     dispatch(setError(error?.message));
   }
 
@@ -260,31 +309,41 @@ export const ResendVerifyEmail = (data) => {
   return handleSignIn();
 };
 
-export const VerifyEmail = (data) => {
-  const dispatch = useAppDispatch();
+export const VerifyEmail = (payload) => async (dispatch) => {
+  dispatch(setLoading(true));
+  dispatch(clearErrors());
 
-  const handleSignIn = async () => {
-    dispatch(setLoading(true));
-    dispatch(clearErrors());
-
-    try {
-      const path = BASE_PATH + "/SignIn";
-      const response = await axios.post(path, data);
-      if (response) {
-        const responseData = response.data;
-        console.log("login response: ", responseData);
-        // Handle response data as needed
+  try {
+    const path = BASE_PATH + "/VerifyEmail";
+    const response = await axios.put(path, payload);
+    if (response) {
+      const data = response.data;
+      console.log("VerifyEmail response: ", data);
+      if (data.code === 200) {
+        dispatch(
+          setNotifyMessage({
+            isSuccess: true,
+            message: "Email Verified Success",
+            description:
+              "Welcome to QuicKee, become more efficient, Please signin",
+          })
+        );
       }
-    } catch (error) {
-      console.log("login error response: ", error);
-      dispatch(setError(error?.message));
     }
+  } catch (error) {
+    console.log("VerifyEmail error response: ", error);
+    const err = error?.response?.data;
+    dispatch(
+      setNotifyMessage({
+        isSuccess: false,
+        message: err?.message,
+        description: err?.message,
+      })
+    );
+    dispatch(setError(error?.message));
+  }
 
-    dispatch(setLoading(false));
-  };
-
-  // Call handleSignIn when needed
-  return handleSignIn();
+  dispatch(setLoading(false));
 };
 
 export const GetReviews = (kitchenId) => async (dispatch) => {

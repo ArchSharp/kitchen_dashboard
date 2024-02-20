@@ -6,6 +6,9 @@ import {
   GetBank,
   ValidateBank,
   setNotifyMessage,
+  setIsVerifyingBank,
+  setIsBankVerified,
+  setBankAccount,
 } from "../../Features/kitchenSlice";
 import { Select, Modal, notification } from "antd";
 import { useNavigate } from "react-router-dom";
@@ -17,8 +20,14 @@ import {
 
 function Signup() {
   const dispatch = useAppDispatch();
-  const { userData, notifyMessage } = useAppSelector(selectKitchen);
-  const [bankNames, setBankNames] = useState([]);
+  const {
+    banks,
+    isVerifyingBank,
+    isBankVerified,
+    userData,
+    notifyMessage,
+    bankAccount,
+  } = useAppSelector(selectKitchen);
   const [activeTab, setActiveTab] = useState(1);
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -52,8 +61,6 @@ function Signup() {
     }
   };
 
-  const [isVerifyingBank, setIsVerifyingBank] = useState(false);
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
@@ -63,44 +70,22 @@ function Signup() {
     });
   };
 
+  useEffect(() => {
+    if (bankAccount && !isVerifyingBank) {
+      setFormData({ ...formData, AccountName: bankAccount?.account_name });
+      setIsModalVisible(true);
+    }
+  }, [bankAccount, isVerifyingBank]);
+
   const handleVerifyBankDetails = async () => {
     if (!isVerifyingBank) {
-      setIsVerifyingBank(true);
+      dispatch(setIsVerifyingBank(true));
       const payload = {
         ...formData,
         ShouldProceed: false,
       };
       console.log("ShouldProceedFalse ", payload);
-      try {
-        const response = await ValidateBank(payload);
-        if (response.status === true) {
-          const accountName = response.data.account_name;
-          setFormData({ ...formData, AccountName: accountName });
-          setIsModalVisible(true);
-        } else if (
-          response.message ===
-          "Could not verify account, kindly check if your account number is correct"
-        ) {
-          notification.error({
-            message: "Bank Account Verification Failed",
-            description:
-              "The bank account details could not be verified. Please double-check your bank account details.",
-          });
-        } else {
-          notification.error({
-            message: "Bank Account Verification Failed",
-          });
-        }
-      } catch (error) {
-        console.error(error);
-        notification.error({
-          message: "Bank Account Verification Failed",
-          description:
-            "An error occurred while verifying your bank account. Please try again.",
-        });
-      } finally {
-        setIsVerifyingBank(false);
-      }
+      dispatch(ValidateBank(payload));
     }
   };
 
@@ -127,9 +112,14 @@ function Signup() {
         onClose: () => dispatch(setNotifyMessage(null)),
       };
       notification.success(response);
-      navigate("/verifyEmail");
+      if (
+        response?.description !==
+        "Your bank account has been verified successfully."
+      ) {
+        navigate("/verifyEmail");
+      }
     } else if (notifyMessage?.isSuccess === false && notifyMessage?.message) {
-      var response = { ...notifyMessage };
+      response = { ...notifyMessage };
       delete response.isSuccess;
       response = {
         ...response,
@@ -175,62 +165,20 @@ function Signup() {
   };
 
   useEffect(() => {
-    fetchBankNames();
-  }, []);
-
-  const fetchBankNames = async () => {
-    try {
-      const bankData = await GetBank();
-      setBankNames(bankData.data);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+    if (!banks) dispatch(GetBank());
+  }, [banks, dispatch]);
 
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isBankVerified, setIsBankVerified] = useState(false);
+
   const handleConfirmation = async () => {
     setIsModalVisible(false);
-    setIsVerifyingBank(true);
-
     const payload = {
       ...formData,
       ShouldProceed: true,
     };
     console.log("ShouldProceedTrue ", payload);
-    try {
-      const response = await ValidateBank(payload);
-      console.log(response);
-      if (response.message === "Transfer recipient created successfully") {
-        setIsBankVerified(true);
-        notification.success({
-          message: "Bank Account Verification Completed",
-          description: "Your bank account has been verified successfully.",
-        });
-      } else if (
-        response.message ===
-        "Could not verify account, kindly check if your account number is correct"
-      ) {
-        notification.error({
-          message: "Bank Account Verification Failed",
-          description:
-            "The bank account details could not be verified. Please double-check your bank account details.",
-        });
-      } else {
-        notification.error({
-          message: "Bank Account Verification Failed",
-        });
-      }
-    } catch (error) {
-      console.error(error);
-      notification.error({
-        message: "Bank Account Verification Failed",
-        description:
-          "An error occurred while verifying your bank account. Please try again.",
-      });
-    } finally {
-      setIsVerifyingBank(false);
-    }
+    dispatch(ValidateBank(payload));
+    dispatch(setBankAccount(null));
   };
 
   return (
@@ -390,7 +338,7 @@ function Signup() {
               <Select
                 style={{ width: "75%", marginTop: "1%", height: "40%" }}
                 onChange={(value, option) => {
-                  const selectedBank = bankNames.find(
+                  const selectedBank = banks.find(
                     (bank) => bank.name === value
                   );
 
@@ -403,7 +351,7 @@ function Signup() {
                   }
                 }}
               >
-                {bankNames.map((bank) => {
+                {banks.map((bank) => {
                   return (
                     <Select.Option key={bank.id} value={bank.name}>
                       {bank.name}

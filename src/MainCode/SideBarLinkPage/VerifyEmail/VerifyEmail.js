@@ -1,10 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../../SignUpScreen/signup.css";
 import { useNavigate, useLocation } from "react-router-dom";
-import { VerifyEmail, ResendVerifyEmail } from "../../../Features/kitchenSlice";
+import {
+  VerifyEmail,
+  ResendVerifyEmail,
+  setNotifyMessage,
+} from "../../../Features/kitchenSlice";
 import { message, notification } from "antd";
+import {
+  selectKitchen,
+  useAppSelector,
+  useAppDispatch,
+} from "../../../Store/store";
 
 function Verifymail() {
+  const dispatch = useAppDispatch();
+  const { notifyMessage } = useAppSelector(selectKitchen);
   const [formData, setFormData] = useState({
     Email: "",
     EmailOTP: "",
@@ -15,6 +26,7 @@ function Verifymail() {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const showResend = queryParams.get("showResend") === "true";
+  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -24,7 +36,30 @@ function Verifymail() {
     });
   };
 
-  const navigate = useNavigate();
+  useEffect(() => {
+    if (notifyMessage?.isSuccess === true) {
+      var response = { ...notifyMessage };
+      delete response.isSuccess;
+      response = {
+        ...response,
+        onClose: () => dispatch(setNotifyMessage(null)),
+      };
+      notification.success(response);
+
+      navigate("/signIn");
+    } else if (notifyMessage?.isSuccess === false && notifyMessage?.message) {
+      var response = { ...notifyMessage };
+      delete response.isSuccess;
+      response = {
+        ...response,
+        onClose: () => dispatch(setNotifyMessage(null)),
+      };
+      if (notifyMessage?.message === "Expired OTP") {
+        setResendEmail(formData.Email);
+      }
+      notification.error(response);
+    }
+  }, [navigate, dispatch, notifyMessage, formData]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -33,40 +68,7 @@ function Verifymail() {
       EmailOTP: formData.EmailOTP,
     };
 
-    try {
-      const response = await VerifyEmail(payload);
-      if (response.code === 200) {
-        notification.success({
-          message: "Login Success",
-          description: "Welcome to QuicKee, become more efficient",
-        });
-        navigate("/signIn");
-      } else if (response.message === "User not found") {
-        notification.error({
-          message: "Login Failed",
-          description: "User not found",
-        });
-      } else if (response.message === "Wrong OTP") {
-        notification.error({
-          message: "Wrong OTP",
-          description: "Check your mail for the correct OTP and try again",
-        });
-      } else if (response.message === "Expired OTP") {
-        message.error("Expired OTP");
-        setResendEmail(formData.Email);
-      } else {
-        notification.error({
-          message: "Login Failed",
-          description: "An error occurred while processing your request.",
-        });
-      }
-    } catch (error) {
-      console.log(error);
-      notification.error({
-        message: "Internal Server Error",
-        description: "An error occurred while processing your request.",
-      });
-    }
+    dispatch(VerifyEmail(payload));
   };
 
   const handleResendEmail = async () => {
