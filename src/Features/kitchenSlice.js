@@ -236,7 +236,8 @@ export const ValidateBank = (data) => async (dispatch) => {
     const err = error?.response?.data;
     if (
       err?.message ===
-      "Could not verify account, kindly check if your account number is correct"
+        "Could not verify account, kindly check if your account number is correct" ||
+      err?.message === "Kitchen already exist"
     ) {
       dispatch(
         setNotifyMessage({

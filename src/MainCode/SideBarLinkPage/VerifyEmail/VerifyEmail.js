@@ -21,11 +21,10 @@ function Verifymail() {
     EmailOTP: "",
   });
 
-  const [resendEmail, setResendEmail] = useState("");
-
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const showResend = queryParams.get("showResend") === "true";
+  const [resendEmail, setResendEmail] = useState(showResend);
   const navigate = useNavigate();
 
   const handleInputChange = (e) => {
@@ -37,26 +36,33 @@ function Verifymail() {
   };
 
   useEffect(() => {
-    if (notifyMessage?.isSuccess === true) {
-      var response = { ...notifyMessage };
-      delete response.isSuccess;
-      response = {
-        ...response,
-        onClose: () => dispatch(setNotifyMessage(null)),
-      };
-      notification.success(response);
-      navigate("/signIn");
-    } else if (notifyMessage?.isSuccess === false && notifyMessage?.message) {
-      response = { ...notifyMessage };
-      delete response.isSuccess;
-      response = {
-        ...response,
-        onClose: () => dispatch(setNotifyMessage(null)),
-      };
-      if (notifyMessage?.message === "Expired OTP") {
-        setResendEmail(formData.Email);
+    if (window.location.pathname === "/verifyEmail") {
+      if (notifyMessage?.isSuccess === true) {
+        var response = { ...notifyMessage };
+        delete response.isSuccess;
+        if (notifyMessage?.message === "Email Verified Success") {
+          navigate("/signIn");
+        } else if (notifyMessage?.message === "Email Resent") {
+          setResendEmail(false);
+        }
+        response = {
+          ...response,
+          onClose: () => dispatch(setNotifyMessage(null)),
+        };
+        notification.success(response);
+      } else if (notifyMessage?.isSuccess === false && notifyMessage?.message) {
+        response = { ...notifyMessage };
+        delete response.isSuccess;
+        response = {
+          ...response,
+          onClose: () => dispatch(setNotifyMessage(null)),
+        };
+        if (notifyMessage?.message === "Expired OTP") {
+          setResendEmail(formData.Email);
+          navigate(`/verifyEmail?showResend=true&email=${formData.Email}`);
+        }
+        notification.error(response);
       }
-      notification.error(response);
     }
   }, [navigate, dispatch, notifyMessage, formData]);
 
@@ -70,7 +76,8 @@ function Verifymail() {
     dispatch(VerifyEmail(payload));
   };
 
-  const handleResendEmail = async () => {
+  const handleResendEmail = async (e) => {
+    e.preventDefault();
     dispatch(ResendVerifyEmail(formData.Email));
   };
 
@@ -93,7 +100,7 @@ function Verifymail() {
             {showResend ? "Resend Verify Email" : "Verify your Kitchen Email"}
           </h2>
 
-          {showResend ? (
+          {resendEmail ? (
             <form onSubmit={handleResendEmail}>
               <div className="input-group">
                 <label htmlFor="Email" style={{ fontFamily: "sans-serif" }}>
@@ -131,28 +138,24 @@ function Verifymail() {
                   required
                 />
               </div>
-              {showResend ? null : (
-                <div className="input-group">
-                  <label
-                    htmlFor="EmailOTP"
-                    style={{ fontFamily: "sans-serif" }}
-                  >
-                    OTP
-                  </label>
-                  <input
-                    type="number"
-                    id="EmailOTP"
-                    name="EmailOTP"
-                    placeholder="Enter your OTP"
-                    value={formData.EmailOTP}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-              )}
+              <div className="input-group">
+                <label htmlFor="EmailOTP" style={{ fontFamily: "sans-serif" }}>
+                  OTP
+                </label>
+                <input
+                  type="number"
+                  id="EmailOTP"
+                  name="EmailOTP"
+                  placeholder="Enter your OTP"
+                  value={formData.EmailOTP}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+
               <div className="button-container">
                 <button type="submit" className="submit-button">
-                  {showResend ? "Resend Email" : "Verify"}
+                  Verify
                 </button>
               </div>
             </form>

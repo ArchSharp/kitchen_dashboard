@@ -33,25 +33,29 @@ function SignIn() {
   };
 
   useEffect(() => {
-    if (notifyMessage?.isSuccess === true) {
-      var response = { ...notifyMessage };
-      delete response.isSuccess;
-      response = {
-        ...response,
-        onClose: () => dispatch(setNotifyMessage(null)),
-      };
-      notification.success(response);
-      navigate("/home");
-    } else if (notifyMessage?.isSuccess === false && notifyMessage?.message) {
-      response = { ...notifyMessage };
-      delete response.isSuccess;
-      response = {
-        ...response,
-        onClose: () => dispatch(setNotifyMessage(null)),
-      };
-      notification.error(response);
-      if (notifyMessage.message === "Unverified email") {
-        navigate(`/verifyEmail?showResend=true&email=${formData.Email}`);
+    if (window.location.pathname === "/signIn") {
+      if (notifyMessage?.isSuccess === true) {
+        var response = { ...notifyMessage };
+        delete response.isSuccess;
+        response = {
+          ...response,
+          onClose: () => dispatch(setNotifyMessage(null)),
+        };
+        notification.success(response);
+        if (notifyMessage?.message !== "Email Verified Success") {
+          navigate("/home");
+        }
+      } else if (notifyMessage?.isSuccess === false && notifyMessage?.message) {
+        response = { ...notifyMessage };
+        delete response.isSuccess;
+        response = {
+          ...response,
+          onClose: () => dispatch(setNotifyMessage(null)),
+        };
+        notification.error(response);
+        if (notifyMessage.message === "Unverified email") {
+          navigate(`/verifyEmail?showResend=true&email=${formData.Email}`);
+        }
       }
     }
   }, [navigate, dispatch, notifyMessage, formData]);

@@ -103,28 +103,30 @@ function Signup() {
   };
 
   useEffect(() => {
-    if (notifyMessage?.isSuccess === true) {
-      var response = { ...notifyMessage };
-      delete response.isSuccess;
-      response = {
-        ...response,
-        onClose: () => dispatch(setNotifyMessage(null)),
-      };
-      notification.success(response);
-      if (
-        response?.description !==
-        "Your bank account has been verified successfully."
-      ) {
-        navigate("/verifyEmail");
+    if (window.location.pathname === "/") {
+      if (notifyMessage?.isSuccess === true) {
+        var response = { ...notifyMessage };
+        delete response.isSuccess;
+        if (
+          response?.description !==
+          "Your bank account has been verified successfully."
+        ) {
+          navigate("/verifyEmail");
+        }
+        response = {
+          ...response,
+          onClose: () => dispatch(setNotifyMessage(null)),
+        };
+        notification.success(response);
+      } else if (notifyMessage?.isSuccess === false && notifyMessage?.message) {
+        response = { ...notifyMessage };
+        delete response.isSuccess;
+        response = {
+          ...response,
+          onClose: () => dispatch(setNotifyMessage(null)),
+        };
+        notification.error(response);
       }
-    } else if (notifyMessage?.isSuccess === false && notifyMessage?.message) {
-      response = { ...notifyMessage };
-      delete response.isSuccess;
-      response = {
-        ...response,
-        onClose: () => dispatch(setNotifyMessage(null)),
-      };
-      notification.error(response);
     }
   }, [navigate, dispatch, notifyMessage, formData]);
 

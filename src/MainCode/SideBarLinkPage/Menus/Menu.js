@@ -155,6 +155,8 @@ const MenuScreen = () => {
         )
         .map((item) => ({ ...item, key: item.Id }))
     : [];
+  filteredMenuItems.sort((a, b) => b.CreatedAt - a.CreatedAt);
+  console.log(filteredMenuItems);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;

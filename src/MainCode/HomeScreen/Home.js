@@ -43,23 +43,25 @@ function Home() {
   }, [userData, refreshToken]);
 
   useEffect(() => {
-    if (notifyMessage?.isSuccess === true) {
-      var response = { ...notifyMessage };
-      delete response.isSuccess;
-      response = {
-        ...response,
-        onClose: () => dispatch(setNotifyMessage(null)),
-      };
-      notification.success(response);
-      navigate("/home");
-    } else if (notifyMessage?.isSuccess === false && notifyMessage?.message) {
-      var response = { ...notifyMessage };
-      delete response.isSuccess;
-      response = {
-        ...response,
-        onClose: () => dispatch(setNotifyMessage(null)),
-      };
-      notification.error(response);
+    if (window.location.pathname === "/home") {
+      if (notifyMessage?.isSuccess === true) {
+        var response = { ...notifyMessage };
+        delete response.isSuccess;
+        response = {
+          ...response,
+          onClose: () => dispatch(setNotifyMessage(null)),
+        };
+        notification.success(response);
+        navigate("/home");
+      } else if (notifyMessage?.isSuccess === false && notifyMessage?.message) {
+        var response = { ...notifyMessage };
+        delete response.isSuccess;
+        response = {
+          ...response,
+          onClose: () => dispatch(setNotifyMessage(null)),
+        };
+        notification.error(response);
+      }
     }
   }, [navigate, dispatch, notifyMessage]);
 
