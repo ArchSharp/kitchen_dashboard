@@ -69,18 +69,11 @@ const MenuScreen = () => {
     const isBasicStaff = userData.Role === "basic";
     const kitchenId = isBasicStaff ? userData.KitchenId : userData.Id;
     dispatch(GetKitchenMenus(kitchenId));
-
-    // if (menus) {
-    //   const sortedMenus = [...menus].sort((a, b) => {
-    //     return moment(b.CreatedAt).valueOf() - moment(a.CreatedAt).valueOf();
-    //   });
-    //   setMenuItems(sortedMenus);
-    // }
   };
 
   useEffect(() => {
-    // const intervalId = setInterval(fetchMenus, 2000);
-    // return () => clearInterval(intervalId);
+    const intervalId = setInterval(fetchMenus, 2000);
+    return () => clearInterval(intervalId);
   }, []);
 
   //Items to show in a table not to cause TMI
@@ -153,10 +146,9 @@ const MenuScreen = () => {
             item.FoodName &&
             item.FoodName.toLowerCase().includes(searchText.toLowerCase())
         )
+        .sort((a, b) => new Date(b.CreatedAt) - new Date(a.CreatedAt))
         .map((item) => ({ ...item, key: item.Id }))
     : [];
-  filteredMenuItems.sort((a, b) => b.CreatedAt - a.CreatedAt);
-  console.log(filteredMenuItems);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;

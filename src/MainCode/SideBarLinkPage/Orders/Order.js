@@ -139,8 +139,8 @@ const Orders = () => {
 
   useEffect(() => {
     fetchOrders();
-    // const intervalId = setInterval(fetchOrders, 2000);
-    // return () => clearInterval(intervalId);
+    const intervalId = setInterval(fetchOrders, 2000);
+    return () => clearInterval(intervalId);
   }, [auth]);
 
   const handleDoneAndPackagedButtonClick = async () => {
