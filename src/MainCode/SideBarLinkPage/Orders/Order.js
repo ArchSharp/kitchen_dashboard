@@ -138,7 +138,6 @@ const Orders = () => {
   };
 
   useEffect(() => {
-    fetchOrders();
     const intervalId = setInterval(fetchOrders, 2000);
     return () => clearInterval(intervalId);
   }, [auth]);
