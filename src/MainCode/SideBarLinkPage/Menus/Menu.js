@@ -137,6 +137,7 @@ const MenuScreen = () => {
     const kitchenId = isBasicStaff ? userData.KitchenId : userData.Id;
     dispatch(UpdateMenu(menuId, kitchenId, payload));
     setEditModalVisible(false);
+    setStage(0);
   };
 
   const filteredMenuItems = menus
@@ -474,7 +475,8 @@ const MenuScreen = () => {
               justifyContent: "center",
               alignItems: "center",
             }}
-            loading={isLoading}
+            loading={stage === 1 ? true : false}
+            onClick={() => setStage(1)}
           >
             Save
           </Button>
