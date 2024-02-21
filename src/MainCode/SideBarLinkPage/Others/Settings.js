@@ -12,6 +12,7 @@ import {
   UploadImage,
   DeleteStaff,
   GetAllStaffs,
+  setStaff,
 } from "../../../Features/kitchenSlice";
 import {
   selectKitchen,
@@ -24,7 +25,6 @@ function Settings() {
   const { userData, allStaffs, staff } = useAppSelector(selectKitchen);
   const [modalVisible, setModalVisible] = useState(false);
   const [addStaffModalVisible, setAddStaffModalVisible] = useState(false);
-  const [deleteStaffIndex, setDeleteStaffIndex] = useState(null);
   const [deleteConfirmationVisible, setDeleteConfirmationVisible] =
     useState(false);
   const [staffShowPasswords, setStaffShowPasswords] = useState([]);
@@ -155,7 +155,11 @@ function Settings() {
                 <Button
                   key="change"
                   type="primary"
-                  onClick={handleAddStaff}
+                  onClick={() => {
+                    handleAddStaff();
+                    setModalVisible(false);
+                    setAddStaffModalVisible(false);
+                  }}
                   disabled={!isFormFilled}
                 >
                   {isAddingStaff ? "Adding Staff..." : "Add Staff"}
@@ -268,7 +272,10 @@ function Settings() {
       <Modal
         title="Confirm Deletion"
         open={deleteConfirmationVisible}
-        onOk={handleDeleteStaff}
+        onOk={() => {
+          handleDeleteStaff();
+          setDeleteConfirmationVisible(false);
+        }}
         onCancel={() => setDeleteConfirmationVisible(false)}
       >
         Do you want to delete this staff
@@ -291,7 +298,7 @@ function Settings() {
                 <Button
                   icon={<DeleteOutlined />}
                   onClick={() => {
-                    setDeleteStaffIndex(index);
+                    dispatch(setStaff(staff));
                     setDeleteConfirmationVisible(true);
                   }}
                   style={{ marginLeft: "1rem" }}

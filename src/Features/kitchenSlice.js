@@ -86,6 +86,8 @@ const kitchenSlice = createSlice({
       state.bankAccount = null;
       state.isBankVerified = false;
       state.image = null;
+      state.staff = null;
+      state.image = null;
     },
   },
 });
@@ -390,6 +392,14 @@ export const DeleteStaff = (staffEmail, KitchenEmail) => async (dispatch) => {
     }
   } catch (error) {
     console.log("DeleteStaff error response: ", error);
+    const err = error?.response?.data;
+    dispatch(
+      setNotifyMessage({
+        isSuccess: false,
+        message: "Error Adding staff",
+        description: err?.message,
+      })
+    );
     dispatch(setError(error?.message));
   }
 
@@ -420,6 +430,14 @@ export const AddStaff = (data, KitchenEmail) => async (dispatch) => {
     }
   } catch (error) {
     console.log("AddStaff error response: ", error);
+    const err = error?.response?.data;
+    dispatch(
+      setNotifyMessage({
+        isSuccess: false,
+        message: "Error Adding staff",
+        description: err?.message,
+      })
+    );
     dispatch(setError(error?.message));
   }
 
