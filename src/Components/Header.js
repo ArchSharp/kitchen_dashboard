@@ -12,19 +12,23 @@ import {
   Input,
 } from "antd";
 import { MailOutlined, BellFilled } from "@ant-design/icons";
-import { GetReviews, NotifyEveryone } from "../Features/kitchenSlice";
-import { message } from "antd";
+import {
+  GetReviews,
+  NotifyEveryone,
+  setImage,
+  setIsModalVisible,
+} from "../Features/kitchenSlice";
 import { selectKitchen, useAppSelector, useAppDispatch } from "../Store/store";
+import { baseURL } from "../Features/utils";
 
 function Header() {
   // const { userData, auth } = useMenuContext();
   const dispatch = useAppDispatch();
-  const { userData, auth, reviews } = useAppSelector(selectKitchen);
+  const { userData, auth, reviews, image, isModalVisible } =
+    useAppSelector(selectKitchen);
   // const [totalReviews, setTotalReviews] = useState(0);
-  const [isModalVisible, setIsModalVisible] = useState(false);
   const [notificationTitle, setNotificationTitle] = useState("");
   const [notificationMessage, setNotificationMessage] = useState("");
-  const storedKitchenImageUrl = localStorage.getItem("kitchenImageUrl");
   const [totalAgreeCount, setTotalAgreeCount] = useState(0);
   const [totalDisagreeCount, setTotalDisagreeCount] = useState(0);
 
@@ -41,42 +45,25 @@ function Header() {
     borderRadius: "50%",
   };
 
-  const getKitchenImageUrl = () => {
-    if (userData && userData.KitchenImage) {
-      return `http://10.10.64.21:85/Uploads/${userData.KitchenImage}`;
-    }
-    return quickeeImage;
-  };
-
-  const kitchenImageUrl = getKitchenImageUrl();
-
-  if (kitchenImageUrl !== storedKitchenImageUrl) {
-    localStorage.setItem("kitchenImageUrl", kitchenImageUrl);
-  }
+  useEffect(() => {
+    dispatch(setImage(`${baseURL}/Uploads/${userData?.KitchenImage}`));
+  }, [image]);
 
   const handleBellIconClick = () => {
     setIsModalVisible(true);
   };
 
   const handleModalOk = async () => {
+    const isBasicStaff = userData.Role === "basic";
+    const kitchenId = isBasicStaff ? userData.KitchenId : userData.Id;
     const payload = {
+      KitchenId: kitchenId,
       Title: notificationTitle,
       UserId: "abcd",
       Message: notificationMessage,
     };
-    try {
-      const response = await NotifyEveryone(payload, auth, userData);
-      if (response.code === 200) {
-        message.success("Notification sent successfully");
-        setIsModalVisible(false);
-      } else {
-        message.error("Error sending notification");
-      }
-    } catch (error) {
-      console.log(error?.response?.data);
-      message.error("Internal Server Error");
-    }
-    // setIsModalVisible(false);
+
+    dispatch(NotifyEveryone(payload));
   };
 
   // Handle modal Cancel button click
@@ -129,7 +116,7 @@ function Header() {
 
   return (
     <div className="Header">
-      <Image src={kitchenImageUrl} style={imageStyle} />
+      <Image src={image} style={imageStyle} />
       <Typography.Title style={{ fontFamily: "sans-serif", marginLeft: "5%" }}>
         {isBasicStaff
           ? `${userData.FirstName} ${userData.LastName} (staff)`

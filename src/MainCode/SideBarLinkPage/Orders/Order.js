@@ -139,8 +139,8 @@ const Orders = () => {
 
   useEffect(() => {
     fetchOrders();
-    const intervalId = setInterval(fetchOrders, 2000);
-    return () => clearInterval(intervalId);
+    // const intervalId = setInterval(fetchOrders, 2000);
+    // return () => clearInterval(intervalId);
   }, [auth]);
 
   const handleDoneAndPackagedButtonClick = async () => {
@@ -182,14 +182,7 @@ const Orders = () => {
       };
     }
 
-    const notificationResponse = await SendNotification(notificationData, auth);
-
-    if (notificationResponse && notificationResponse.code === 200) {
-      message.success("Notification sent successfully");
-      fetchOrders();
-    } else {
-      message.error("Notification wasn't sent");
-    }
+    dispatch(SendNotification(notificationData));
   };
 
   const ordersPerPage = 8;

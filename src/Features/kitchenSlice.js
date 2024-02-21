@@ -6,6 +6,7 @@ import axiosWithAuth, { axios, axiosAuth } from "../Features/utils";
 const kitchenSlice = createSlice({
   name: "kitchen",
   initialState: {
+    image: null,
     banks: null,
     orders: null,
     isBankVerified: null,
@@ -23,6 +24,9 @@ const kitchenSlice = createSlice({
     bankAccount: null,
   },
   reducers: {
+    setImage: (state, actions) => {
+      state.image = actions.payload;
+    },
     setIsBankVerified: (state, actions) => {
       state.isBankVerified = actions.payload;
     },
@@ -81,12 +85,14 @@ const kitchenSlice = createSlice({
       state.isVerifyingBank = false;
       state.bankAccount = null;
       state.isBankVerified = false;
+      state.image = null;
     },
   },
 });
 
 export const {
   setLogout,
+  setImage,
   setStaff,
   setReviews,
   setMenus,
@@ -420,31 +426,44 @@ export const AddStaff = (data, KitchenEmail) => async (dispatch) => {
   dispatch(setLoading(false));
 };
 
-export const UploadImage = (data) => {
-  const dispatch = useAppDispatch();
+export const UploadImage = (payload) => async (dispatch) => {
+  dispatch(setLoading(true));
+  dispatch(clearErrors());
 
-  const handleSignIn = async () => {
-    dispatch(setLoading(true));
-    dispatch(clearErrors());
-
-    try {
-      const path = BASE_PATH + "/SignIn";
-      const response = await axios.post(path, data);
-      if (response) {
-        const responseData = response.data;
-        console.log("login response: ", responseData);
-        // Handle response data as needed
+  try {
+    const path = BASE_PATH + `/Upload?KitchenId=${payload.get("KitchenId")}`;
+    const response = await axios.post(path, payload);
+    if (response) {
+      const data = response.data;
+      console.log("UploadImage response: ", data);
+      if (data.code === 200) {
+        const user = store.getState()?.kitchen?.userData;
+        dispatch(
+          setUserData({ ...user, KitchenImage: data?.extrainfo?.ImageUrl })
+        );
+        dispatch(setImage(data?.extrainfo?.ImageUrl));
+        dispatch(
+          setNotifyMessage({
+            isSuccess: true,
+            message: "Image uploaded",
+            description: "Image has been uploaded",
+          })
+        );
       }
-    } catch (error) {
-      console.log("login error response: ", error);
-      dispatch(setError(error?.message));
     }
+  } catch (error) {
+    console.log("UploadImage error response: ", error);
+    dispatch(
+      setNotifyMessage({
+        isSuccess: false,
+        message: "Upload error",
+        description: "Image could not be uploaded",
+      })
+    );
+    dispatch(setError(error?.message));
+  }
 
-    dispatch(setLoading(false));
-  };
-
-  // Call handleSignIn when needed
-  return handleSignIn();
+  dispatch(setLoading(false));
 };
 
 export const GetKitchenOrders = (email) => async (dispatch) => {
@@ -468,31 +487,39 @@ export const GetKitchenOrders = (email) => async (dispatch) => {
   dispatch(setLoading(false));
 };
 
-export const SendNotification = (data) => {
-  const dispatch = useAppDispatch();
+export const SendNotification = (payload) => async (dispatch) => {
+  dispatch(setLoading(true));
+  dispatch(clearErrors());
 
-  const handleSignIn = async () => {
-    dispatch(setLoading(true));
-    dispatch(clearErrors());
-
-    try {
-      const path = BASE_PATH + "/SignIn";
-      const response = await axios.post(path, data);
-      if (response) {
-        const responseData = response.data;
-        console.log("login response: ", responseData);
-        // Handle response data as needed
+  try {
+    const path = BASE_PATH + "/SendNotification";
+    const response = await axiosWithAuth.post(path, payload);
+    if (response) {
+      const data = response.data;
+      console.log("SendNotification response: ", data);
+      if (data.code === 200) {
+        dispatch(
+          setNotifyMessage({
+            isSuccess: true,
+            message: "Sent notification",
+            description: "Notification sent successfully",
+          })
+        );
       }
-    } catch (error) {
-      console.log("login error response: ", error);
-      dispatch(setError(error?.message));
     }
+  } catch (error) {
+    console.log("SendNotification error response: ", error);
+    dispatch(
+      setNotifyMessage({
+        isSuccess: false,
+        message: "Sent notification failed",
+        description: "Notification was not sent",
+      })
+    );
+    dispatch(setError(error?.message));
+  }
 
-    dispatch(setLoading(false));
-  };
-
-  // Call handleSignIn when needed
-  return handleSignIn();
+  dispatch(setLoading(false));
 };
 
 export const UpdateMenu = (menuId, kitchenId, payload) => async (dispatch) => {
@@ -618,31 +645,24 @@ export const GetNewToken = (data) => async (dispatch) => {
   dispatch(setLoading(false));
 };
 
-export const NotifyEveryone = (data) => {
-  const dispatch = useAppDispatch();
+export const NotifyEveryone = (payload) => async (dispatch) => {
+  dispatch(setLoading(true));
+  dispatch(clearErrors());
 
-  const handleSignIn = async () => {
-    dispatch(setLoading(true));
-    dispatch(clearErrors());
-
-    try {
-      const path = BASE_PATH + "/SignIn";
-      const response = await axios.post(path, data);
-      if (response) {
-        const responseData = response.data;
-        console.log("login response: ", responseData);
-        // Handle response data as needed
-      }
-    } catch (error) {
-      console.log("login error response: ", error);
-      dispatch(setError(error?.message));
+  try {
+    const path = BASE_PATH + "/NotifiyAllUsers";
+    const response = await axiosWithAuth.post(path, payload);
+    if (response) {
+      const data = response.data;
+      console.log("NotifyEveryone response: ", data);
+      // Handle response data as needed
     }
+  } catch (error) {
+    console.log("NotifyEveryone error response: ", error);
+    dispatch(setError(error?.message));
+  }
 
-    dispatch(setLoading(false));
-  };
-
-  // Call handleSignIn when needed
-  return handleSignIn();
+  dispatch(setLoading(false));
 };
 
 export const GetAllStaffs = (email) => async (dispatch) => {

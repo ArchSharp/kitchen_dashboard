@@ -36,7 +36,7 @@ const MenuScreen = () => {
   const [newMenuAlertVisible, setNewMenuAlertVisible] = useState(false);
   const [editMenuAlertVisible, setEditMenuAlertVisible] = useState(false);
   const [deleteMenuAlertVisible, setDeleteMenuAlertVisible] = useState(false);
-
+  const [stage, setStage] = useState(0);
   const [editItem, setEditItem] = useState(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [searchText, setSearchText] = useState("");
@@ -51,34 +51,36 @@ const MenuScreen = () => {
   });
 
   useEffect(() => {
-    if (!menus) {
-      const isBasicStaff = userData.Role === "basic";
-      const kitchenId = isBasicStaff ? userData.KitchenId : userData.Id;
-      dispatch(GetKitchenMenus(kitchenId));
-    }
+    // if (!menus) {
+    const isBasicStaff = userData.Role === "basic";
+    const kitchenId = isBasicStaff ? userData.KitchenId : userData.Id;
+    dispatch(GetKitchenMenus(kitchenId));
+    // }
   }, []);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(7);
 
-  // console.log(userData)
+  useEffect(() => {
+    setMenuItems(menus);
+  }, []);
 
   const fetchMenus = async () => {
     const isBasicStaff = userData.Role === "basic";
     const kitchenId = isBasicStaff ? userData.KitchenId : userData.Id;
     dispatch(GetKitchenMenus(kitchenId));
 
-    if (menus) {
-      const sortedMenus = [...menus].sort((a, b) => {
-        return moment(b.CreatedAt).valueOf() - moment(a.CreatedAt).valueOf();
-      });
-      setMenuItems(sortedMenus);
-    }
+    // if (menus) {
+    //   const sortedMenus = [...menus].sort((a, b) => {
+    //     return moment(b.CreatedAt).valueOf() - moment(a.CreatedAt).valueOf();
+    //   });
+    //   setMenuItems(sortedMenus);
+    // }
   };
 
   useEffect(() => {
-    const intervalId = setInterval(fetchMenus, 2000);
-    return () => clearInterval(intervalId);
+    // const intervalId = setInterval(fetchMenus, 2000);
+    // return () => clearInterval(intervalId);
   }, []);
 
   //Items to show in a table not to cause TMI
@@ -100,6 +102,7 @@ const MenuScreen = () => {
 
     dispatch(CreateMenu(userData, newValues));
     dispatch(setIsModalVisible(false));
+    setStage(0);
   };
 
   const handleEdit = (record) => {
@@ -124,14 +127,6 @@ const MenuScreen = () => {
     });
   };
 
-  // console.log('Okay' , menus)
-  const menusData = menus || [];
-
-  const MenuId = menusData.Id;
-
-  // console.log('This is me ', MenuId);
-  // console.log(menusData)
-
   const handleEditFormSubmit = async (values) => {
     const menuId = editItem ? editItem.key : null;
     if (!menuId) {
@@ -151,8 +146,8 @@ const MenuScreen = () => {
     setEditModalVisible(false);
   };
 
-  const filteredMenuItems = menuItems
-    ? menuItems
+  const filteredMenuItems = menus
+    ? menus
         .filter(
           (item) =>
             item.FoodName &&
@@ -167,10 +162,6 @@ const MenuScreen = () => {
       ...formData,
       [name]: value,
     });
-  };
-
-  const clearLocalStorage = () => {
-    localStorage.removeItem("menus");
   };
 
   return (
@@ -193,7 +184,9 @@ const MenuScreen = () => {
           <Button
             type="primary"
             style={{ marginLeft: "auto", marginTop: "1rem" }}
-            onClick={() => dispatch(setIsModalVisible(true))}
+            onClick={() => {
+              dispatch(setIsModalVisible(true));
+            }}
           >
             Add a new menu
           </Button>
@@ -390,7 +383,8 @@ const MenuScreen = () => {
               justifyContent: "center",
               alignItems: "center",
             }}
-            loading={isLoading}
+            loading={stage === 1 ? true : false}
+            onClick={() => setStage(1)}
           >
             Add
           </Button>

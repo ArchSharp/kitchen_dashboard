@@ -21,8 +21,7 @@ import {
 
 function Settings() {
   const dispatch = useAppDispatch();
-  const { userData, allStaffs, setImage, staff } =
-    useAppSelector(selectKitchen);
+  const { userData, allStaffs, staff } = useAppSelector(selectKitchen);
   const [modalVisible, setModalVisible] = useState(false);
   const [addStaffModalVisible, setAddStaffModalVisible] = useState(false);
   const [deleteStaffIndex, setDeleteStaffIndex] = useState(null);
@@ -76,28 +75,16 @@ function Settings() {
   }, [allStaffs, dispatch, userData]);
 
   const handleUpload = async () => {
-    try {
-      const formData = new FormData();
-      const fileInput = document.querySelector('input[type="file"]');
-      if (fileInput.files[0]) {
-        formData.append("image", fileInput.files[0]);
-        formData.append("KitchenId", userData.Id);
+    const formData = new FormData();
+    const fileInput = document.querySelector('input[type="file"]');
+    if (fileInput.files[0]) {
+      formData.append("image", fileInput.files[0]);
+      formData.append("KitchenId", userData.Id);
 
-        const response = await UploadImage(formData);
-
-        if (response.code === 200) {
-          localStorage.setItem("Image", JSON.stringify(response.extrainfo));
-          message.success("Image uploaded successfully");
-          setUploadImageModalVisible(false);
-          // console.log(response.extrainfo)
-          setImage(response.extrainfo);
-        }
-      } else {
-        message.error("Please select an image to upload.");
-      }
-    } catch (error) {
-      console.error(error);
-      message.error("An error occurred during image upload.");
+      setUploadImageModalVisible(false);
+      dispatch(UploadImage(formData));
+    } else {
+      message.error("Please select an image to upload.");
     }
   };
 
