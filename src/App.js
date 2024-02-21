@@ -1,11 +1,7 @@
 import logo from "./logo.svg";
 import "./App.css";
 import { useRoutes } from "react-router-dom";
-import React, { useEffect } from "react";
-import { selectKitchen, useAppSelector } from "./Store/store";
-import { generateToken, messaging } from "./MainCode/notifcations/firebase";
-import { onMessage } from "firebase/messaging";
-import { notification } from "antd";
+import React from "react";
 
 import ForgotPassword from "./MainCode/ForgotPassword/ForgotPassword";
 import ResetPassword from "./MainCode/ForgotPassword/ResetPassword";
@@ -16,19 +12,6 @@ import Signup from "./MainCode/SignUpScreen/Signup";
 import Home from "./MainCode/HomeScreen/Home";
 
 function App() {
-  const { auth } = useAppSelector(selectKitchen);
-
-  useEffect(() => {
-    generateToken();
-    onMessage(messaging, (payload) => {
-      console.log(payload);
-      notification.open({
-        message: payload.notification.title,
-        description: payload.notification.body,
-      });
-    });
-  }, []);
-
   const routes = useRoutes([
     { path: "/", element: <Signup /> },
     { path: "/signIn", element: <SignIn /> },
