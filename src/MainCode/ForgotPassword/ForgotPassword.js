@@ -1,10 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../SignUpScreen/signup.css";
 import { useNavigate } from "react-router-dom";
-import { Forgotpassword } from "../../Features/kitchenSlice";
+import { Forgotpassword, setNotifyMessage } from "../../Features/kitchenSlice";
 import { notification } from "antd";
+import {
+  useAppDispatch,
+  useAppSelector,
+  selectKitchen,
+} from "../../Store/store";
 
 function ForgotPassword() {
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const { notifyMessage } = useAppSelector(selectKitchen);
+
   const [formData, setFormData] = useState({
     Email: "",
   });
@@ -17,46 +26,35 @@ function ForgotPassword() {
     });
   };
 
-  const navigate = useNavigate();
+  useEffect(() => {
+    if (window.location.pathname === "/forgotpassword") {
+      if (notifyMessage?.isSuccess === true) {
+        var response = { ...notifyMessage };
+        delete response.isSuccess;
+        response = {
+          ...response,
+          onClose: () => dispatch(setNotifyMessage(null)),
+        };
+        notification.success(response);
+        navigate(`/resetPassword/${formData.Email}`);
+      } else if (notifyMessage?.isSuccess === false && notifyMessage?.message) {
+        response = { ...notifyMessage };
+        delete response.isSuccess;
+        response = {
+          ...response,
+          onClose: () => dispatch(setNotifyMessage(null)),
+        };
+        notification.error(response);
+      }
+    }
+  }, [navigate, dispatch, notifyMessage, formData]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    try {
-      const payload = {
-        Email: formData.Email,
-      };
-      const response = await Forgotpassword(payload);
-      console.log(response);
-      // console.log(payload)
-
-      if (response.code === 200) {
-        notification.success({
-          message: "Email Sent",
-          description: "Email OTP has been resent. Check your email.",
-        });
-        navigate(`/resetPassword/${formData.Email}`);
-      } else if (
-        response.code === 400 &&
-        response.message === "User not found"
-      ) {
-        notification.error({
-          message: "User Not Found",
-          description: "The provided email does not exist in our records.",
-        });
-      } else {
-        notification.error({
-          message: "Resend Email Failed",
-          description: "An error occurred while resending the email.",
-        });
-      }
-    } catch (error) {
-      console.log(error);
-      notification.error({
-        message: "Internal Server Error",
-        description: "An error occurred while processing your request.",
-      });
-    }
+    const payload = {
+      Email: formData.Email,
+    };
+    dispatch(Forgotpassword(payload));
   };
 
   const handleSignInBack = () => {

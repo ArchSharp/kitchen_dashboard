@@ -1,10 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../SignUpScreen/signup.css";
 import { useNavigate, useParams } from "react-router-dom";
-import { Button, message } from "antd";
-import { ResetPasswords } from "../../Features/kitchenSlice";
+import { Button, notification } from "antd";
+import { ResetPasswords, setNotifyMessage } from "../../Features/kitchenSlice";
+import {
+  selectKitchen,
+  useAppSelector,
+  useAppDispatch,
+} from "../../Store/store";
 
 function ResetPassword() {
+  const { notifyMessage } = useAppSelector(selectKitchen);
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+
   const { email } = useParams();
   const [formData, setFormData] = useState({
     Email: email,
@@ -20,30 +29,40 @@ function ResetPassword() {
     });
   };
 
-  const navigate = useNavigate();
+  useEffect(() => {
+    if (window.location.pathname === "/resetPassword") {
+      if (notifyMessage?.isSuccess === true) {
+        var response = { ...notifyMessage };
+        delete response.isSuccess;
+        response = {
+          ...response,
+          onClose: () => dispatch(setNotifyMessage(null)),
+        };
+        notification.success(response);
+        navigate("/signIn");
+      } else if (notifyMessage?.isSuccess === false && notifyMessage?.message) {
+        response = { ...notifyMessage };
+        delete response.isSuccess;
+        response = {
+          ...response,
+          onClose: () => dispatch(setNotifyMessage(null)),
+        };
+        notification.error(response);
+        if (notifyMessage?.message === "Expired OTP") {
+          navigate("/forgotpassword");
+        }
+      }
+    }
+  }, [navigate, dispatch, notifyMessage, formData]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const payload = {
-        Email: formData.Email,
-        OTP: formData.OTP,
-        NewPassword: formData.NewPassword,
-      };
-      const response = await ResetPasswords(payload);
-      if (response.code === 200) {
-        message.success(response.message);
-        navigate("/signIn");
-      } else if (response.message === "Wrong OTP") {
-        message.error(response.message);
-      } else if (response.message === "Expired OTP") {
-        message.error(response.message);
-        navigate("/forgotpassword");
-      }
-    } catch (error) {
-      console.log(error?.response?.data);
-      message.error(error?.response?.data?.message);
-    }
+    const payload = {
+      Email: formData.Email,
+      OTP: formData.OTP,
+      NewPassword: formData.NewPassword,
+    };
+    dispatch(ResetPasswords(payload));
   };
   const handleSignInBack = () => {
     navigate("/signIn");

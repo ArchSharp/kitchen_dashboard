@@ -595,15 +595,32 @@ export const ResetPasswords = (data) => async (dispatch) => {
   dispatch(clearErrors());
 
   try {
-    const path = BASE_PATH + "/SignIn";
-    const response = await axios.post(path, data);
+    const path = BASE_PATH + "/ResetPassword";
+    const response = await axios.put(path, data);
     if (response) {
-      const responseData = response.data;
-      console.log("login response: ", responseData);
-      // Handle response data as needed
+      const data = response.data;
+      console.log("ResetPasswords response: ", data);
+      if (data.code === 200) {
+        dispatch(
+          setNotifyMessage({
+            isSuccess: true,
+            message: "Email Sent",
+            description: "Email OTP has been resent. Check your email.",
+          })
+        );
+      }
     }
   } catch (error) {
-    console.log("login error response: ", error);
+    console.log("ResetPasswords error response: ", error);
+    const err = error?.response?.data;
+    dispatch(
+      setNotifyMessage({
+        isSuccess: false,
+        message: err?.message,
+        description: err?.message,
+      })
+    );
+
     dispatch(setError(error?.message));
   }
 
@@ -713,15 +730,31 @@ export const Forgotpassword = (data) => async (dispatch) => {
   dispatch(clearErrors());
 
   try {
-    const path = BASE_PATH + "/SignIn";
+    const path = BASE_PATH + `/ForgotPassword?Email=${data.Email}`;
     const response = await axios.post(path, data);
     if (response) {
-      const responseData = response.data;
-      console.log("login response: ", responseData);
-      // Handle response data as needed
+      const data = response.data;
+      console.log("Forgotpassword response: ", data);
+      if (data.code === 200) {
+        dispatch(
+          setNotifyMessage({
+            isSuccess: true,
+            message: "Email Sent",
+            description: "Email OTP has been resent. Check your email.",
+          })
+        );
+      }
     }
   } catch (error) {
-    console.log("login error response: ", error);
+    console.log("Forgotpassword error response: ", error);
+    const err = error?.response?.data;
+    dispatch(
+      setNotifyMessage({
+        isSuccess: false,
+        message: err?.message,
+        description: err?.message,
+      })
+    );
     dispatch(setError(error?.message));
   }
 
