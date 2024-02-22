@@ -37,23 +37,22 @@ function SignIn() {
       if (notifyMessage?.isSuccess === true) {
         var response = { ...notifyMessage };
         delete response.isSuccess;
-        response = {
-          ...response,
-          onClose: () => dispatch(setNotifyMessage(null)),
-        };
+        response = { ...response };
         notification.success(response);
-        if (notifyMessage?.message !== "Email Verified Success") {
+        dispatch(setNotifyMessage(null));
+        if (
+          response?.message !== "Email Verified Success" ||
+          response?.message !== "Password Updated"
+        ) {
           navigate("/home");
         }
       } else if (notifyMessage?.isSuccess === false && notifyMessage?.message) {
         response = { ...notifyMessage };
         delete response.isSuccess;
-        response = {
-          ...response,
-          onClose: () => dispatch(setNotifyMessage(null)),
-        };
+        response = { ...response };
         notification.error(response);
-        if (notifyMessage.message === "Unverified email") {
+        dispatch(setNotifyMessage(null));
+        if (response?.message === "Unverified email") {
           navigate(`/verifyEmail?showResend=true&email=${formData.Email}`);
         }
       }

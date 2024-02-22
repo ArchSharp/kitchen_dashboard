@@ -36,7 +36,7 @@ function Verifymail() {
   };
 
   useEffect(() => {
-    if (window.location.pathname === "/verifyEmail") {
+    if (window.location.pathname.includes("/verifyEmail")) {
       if (notifyMessage?.isSuccess === true) {
         var response = { ...notifyMessage };
         delete response.isSuccess;
@@ -45,23 +45,19 @@ function Verifymail() {
         } else if (notifyMessage?.message === "Email Resent") {
           setResendEmail(false);
         }
-        response = {
-          ...response,
-          onClose: () => dispatch(setNotifyMessage(null)),
-        };
+        response = { ...response };
         notification.success(response);
+        dispatch(setNotifyMessage(null));
       } else if (notifyMessage?.isSuccess === false && notifyMessage?.message) {
         response = { ...notifyMessage };
         delete response.isSuccess;
-        response = {
-          ...response,
-          onClose: () => dispatch(setNotifyMessage(null)),
-        };
-        if (notifyMessage?.message === "Expired OTP") {
+        response = { ...response };
+        notification.error(response);
+        dispatch(setNotifyMessage(null));
+        if (response?.message === "Expired OTP") {
           setResendEmail(formData.Email);
           navigate(`/verifyEmail?showResend=true&email=${formData.Email}`);
         }
-        notification.error(response);
       }
     }
   }, [navigate, dispatch, notifyMessage, formData]);

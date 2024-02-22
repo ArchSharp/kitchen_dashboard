@@ -604,7 +604,7 @@ export const ResetPasswords = (data) => async (dispatch) => {
         dispatch(
           setNotifyMessage({
             isSuccess: true,
-            message: "Email Sent",
+            message: "Password Updated",
             description: "Email OTP has been resent. Check your email.",
           })
         );
@@ -620,7 +620,42 @@ export const ResetPasswords = (data) => async (dispatch) => {
         description: err?.message,
       })
     );
+    dispatch(setError(error?.message));
+  }
 
+  dispatch(setLoading(false));
+};
+
+export const Forgotpassword = (data) => async (dispatch) => {
+  dispatch(setLoading(true));
+  dispatch(clearErrors());
+
+  try {
+    const path = BASE_PATH + `/ForgotPassword?Email=${data.Email}`;
+    const response = await axios.post(path, data);
+    if (response) {
+      const data = response.data;
+      console.log("Forgotpassword response: ", data);
+      if (data.code === 200) {
+        dispatch(
+          setNotifyMessage({
+            isSuccess: true,
+            message: "Email Sent",
+            description: "Email OTP has been resent. Check your email.",
+          })
+        );
+      }
+    }
+  } catch (error) {
+    console.log("Forgotpassword error response: ", error);
+    const err = error?.response?.data;
+    dispatch(
+      setNotifyMessage({
+        isSuccess: false,
+        message: err?.message,
+        description: err?.message,
+      })
+    );
     dispatch(setError(error?.message));
   }
 
@@ -719,42 +754,6 @@ export const DeleteMenu = (menuId, kitchenId) => async (dispatch) => {
     }
   } catch (error) {
     console.log("DeleteMenu error response: ", error);
-    dispatch(setError(error?.message));
-  }
-
-  dispatch(setLoading(false));
-};
-
-export const Forgotpassword = (data) => async (dispatch) => {
-  dispatch(setLoading(true));
-  dispatch(clearErrors());
-
-  try {
-    const path = BASE_PATH + `/ForgotPassword?Email=${data.Email}`;
-    const response = await axios.post(path, data);
-    if (response) {
-      const data = response.data;
-      console.log("Forgotpassword response: ", data);
-      if (data.code === 200) {
-        dispatch(
-          setNotifyMessage({
-            isSuccess: true,
-            message: "Email Sent",
-            description: "Email OTP has been resent. Check your email.",
-          })
-        );
-      }
-    }
-  } catch (error) {
-    console.log("Forgotpassword error response: ", error);
-    const err = error?.response?.data;
-    dispatch(
-      setNotifyMessage({
-        isSuccess: false,
-        message: err?.message,
-        description: err?.message,
-      })
-    );
     dispatch(setError(error?.message));
   }
 

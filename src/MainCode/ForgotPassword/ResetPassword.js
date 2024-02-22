@@ -30,24 +30,20 @@ function ResetPassword() {
   };
 
   useEffect(() => {
-    if (window.location.pathname === "/resetPassword") {
+    if (window.location.pathname.includes("/resetPassword")) {
       if (notifyMessage?.isSuccess === true) {
         var response = { ...notifyMessage };
         delete response.isSuccess;
-        response = {
-          ...response,
-          onClose: () => dispatch(setNotifyMessage(null)),
-        };
+        response = { ...response };
         notification.success(response);
+        dispatch(setNotifyMessage(null));
         navigate("/signIn");
       } else if (notifyMessage?.isSuccess === false && notifyMessage?.message) {
         response = { ...notifyMessage };
         delete response.isSuccess;
-        response = {
-          ...response,
-          onClose: () => dispatch(setNotifyMessage(null)),
-        };
+        response = { ...response };
         notification.error(response);
+        dispatch(setNotifyMessage(null));
         if (notifyMessage?.message === "Expired OTP") {
           navigate("/forgotpassword");
         }

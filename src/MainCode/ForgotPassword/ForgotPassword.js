@@ -27,24 +27,20 @@ function ForgotPassword() {
   };
 
   useEffect(() => {
-    if (window.location.pathname === "/forgotpassword") {
+    if (window.location.pathname.includes("/forgotpassword")) {
       if (notifyMessage?.isSuccess === true) {
         var response = { ...notifyMessage };
         delete response.isSuccess;
-        response = {
-          ...response,
-          onClose: () => dispatch(setNotifyMessage(null)),
-        };
+        response = { ...response };
         notification.success(response);
+        dispatch(setNotifyMessage(null));
         navigate(`/resetPassword/${formData.Email}`);
       } else if (notifyMessage?.isSuccess === false && notifyMessage?.message) {
         response = { ...notifyMessage };
         delete response.isSuccess;
-        response = {
-          ...response,
-          onClose: () => dispatch(setNotifyMessage(null)),
-        };
+        response = { ...response };
         notification.error(response);
+        dispatch(setNotifyMessage(null));
       }
     }
   }, [navigate, dispatch, notifyMessage, formData]);

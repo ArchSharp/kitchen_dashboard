@@ -113,19 +113,15 @@ function Signup() {
         ) {
           navigate("/verifyEmail");
         }
-        response = {
-          ...response,
-          onClose: () => dispatch(setNotifyMessage(null)),
-        };
+        response = { ...response };
         notification.success(response);
+        dispatch(setNotifyMessage(null));
       } else if (notifyMessage?.isSuccess === false && notifyMessage?.message) {
         response = { ...notifyMessage };
         delete response.isSuccess;
-        response = {
-          ...response,
-          onClose: () => dispatch(setNotifyMessage(null)),
-        };
+        response = { ...response };
         notification.error(response);
+        dispatch(setNotifyMessage(null));
       }
     }
   }, [navigate, dispatch, notifyMessage, formData]);

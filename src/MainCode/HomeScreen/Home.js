@@ -47,20 +47,16 @@ function Home() {
       if (notifyMessage?.isSuccess === true) {
         var response = { ...notifyMessage };
         delete response.isSuccess;
-        response = {
-          ...response,
-          onClose: () => dispatch(setNotifyMessage(null)),
-        };
+        response = { ...response };
         notification.success(response);
+        dispatch(setNotifyMessage(null));
         navigate("/home");
       } else if (notifyMessage?.isSuccess === false && notifyMessage?.message) {
         var response = { ...notifyMessage };
         delete response.isSuccess;
-        response = {
-          ...response,
-          onClose: () => dispatch(setNotifyMessage(null)),
-        };
+        response = { ...response };
         notification.error(response);
+        dispatch(setNotifyMessage(null));
       }
     }
   }, [navigate, dispatch, notifyMessage]);

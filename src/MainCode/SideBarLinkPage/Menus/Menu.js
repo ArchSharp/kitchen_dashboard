@@ -30,8 +30,7 @@ const { Search } = Input;
 
 const MenuScreen = () => {
   const dispatch = useAppDispatch();
-  const { userData, isLoading, menus, isModalVisible } =
-    useAppSelector(selectKitchen);
+  const { userData, menus, isModalVisible } = useAppSelector(selectKitchen);
   const [menuItems, setMenuItems] = useState([]);
   const [newMenuAlertVisible, setNewMenuAlertVisible] = useState(false);
   const [editMenuAlertVisible, setEditMenuAlertVisible] = useState(false);
@@ -54,16 +53,16 @@ const MenuScreen = () => {
     // if (!menus) {
     const isBasicStaff = userData.Role === "basic";
     const kitchenId = isBasicStaff ? userData.KitchenId : userData.Id;
-    dispatch(GetKitchenMenus(kitchenId));
+    if (!menus) dispatch(GetKitchenMenus(kitchenId));
     // }
-  }, []);
+  }, [dispatch, userData, menus]);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(7);
 
   useEffect(() => {
     setMenuItems(menus);
-  }, []);
+  }, [menus]);
 
   const fetchMenus = async () => {
     const isBasicStaff = userData.Role === "basic";
