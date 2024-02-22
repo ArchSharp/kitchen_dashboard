@@ -1,5 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-import store, { useAppDispatch } from "../Store/store";
 import { clearErrors, setError } from "../Features/errorSlice";
 import axiosWithAuth, { axios, axiosAuth } from "../Features/utils";
 
@@ -92,27 +91,6 @@ const kitchenSlice = createSlice({
   },
 });
 
-export const {
-  setLogout,
-  setImage,
-  setStaff,
-  setReviews,
-  setMenus,
-  setAuth,
-  setBankAccount,
-  setOrders,
-  setIsBankVerified,
-  setIsModalVisible,
-  setIsVerifyingBank,
-  setLoading,
-  setUserData,
-  setNotifyMessage,
-  setRefreshToken,
-  setBanks,
-  setAllStaffs,
-} = kitchenSlice.actions;
-export default kitchenSlice.reducer;
-
 const BASE_PATH = "/Kitchen";
 
 export const Signin = (data) => async (dispatch) => {
@@ -126,6 +104,7 @@ export const Signin = (data) => async (dispatch) => {
       const data = response.data;
       console.log("login response: ", data);
       if (data.code === 200) {
+        localStorage.setItem("accesstoken", data?.extrainfo?.accesstoken);
         dispatch(setUserData(data.body));
         dispatch(setAuth(data.extrainfo));
         dispatch(setRefreshToken(data?.extrainfo?.refreshtoken));
@@ -445,7 +424,7 @@ export const AddStaff = (data, KitchenEmail) => async (dispatch) => {
   dispatch(setLoading(false));
 };
 
-export const UploadImage = (payload) => async (dispatch) => {
+export const UploadImage = (payload) => async (dispatch, getState) => {
   dispatch(setLoading(true));
   dispatch(clearErrors());
 
@@ -456,7 +435,7 @@ export const UploadImage = (payload) => async (dispatch) => {
       const data = response.data;
       console.log("UploadImage response: ", data);
       if (data.code === 200) {
-        const user = store.getState()?.kitchen?.userData;
+        const user = getState()?.kitchen?.userData;
         dispatch(
           setUserData({ ...user, KitchenImage: data?.extrainfo?.ImageUrl })
         );
@@ -611,47 +590,41 @@ export const CreateMenu = (userData, payload) => async (dispatch) => {
   dispatch(setLoading(false));
 };
 
-export const ResetPasswords = (data) => {
-  const dispatch = useAppDispatch();
-
-  const handleSignIn = async () => {
-    dispatch(setLoading(true));
-    dispatch(clearErrors());
-
-    try {
-      const path = BASE_PATH + "/SignIn";
-      const response = await axios.post(path, data);
-      if (response) {
-        const responseData = response.data;
-        console.log("login response: ", responseData);
-        // Handle response data as needed
-      }
-    } catch (error) {
-      console.log("login error response: ", error);
-      dispatch(setError(error?.message));
-    }
-
-    dispatch(setLoading(false));
-  };
-
-  // Call handleSignIn when needed
-  return handleSignIn();
-};
-
-export const GetNewToken = (data) => async (dispatch) => {
+export const ResetPasswords = (data) => async (dispatch) => {
   dispatch(setLoading(true));
   dispatch(clearErrors());
 
   try {
+    const path = BASE_PATH + "/SignIn";
+    const response = await axios.post(path, data);
+    if (response) {
+      const responseData = response.data;
+      console.log("login response: ", responseData);
+      // Handle response data as needed
+    }
+  } catch (error) {
+    console.log("login error response: ", error);
+    dispatch(setError(error?.message));
+  }
+
+  dispatch(setLoading(false));
+};
+
+export const GetNewToken = () => async (dispatch, getState) => {
+  dispatch(setLoading(true));
+  dispatch(clearErrors());
+
+  try {
+    const refresh = getState().kitchen.refreshToken;
+    const user = getState().kitchen.userData;
     const path =
       BASE_PATH +
-      `/GetNewAccessToken?Email=${data?.KitchenEmail}&&UserId=${data?.Id}`;
-    const refresh = store.getState().kitchen.refreshToken;
+      `/GetNewAccessToken?Email=${user?.KitchenEmail}&&UserId=${user?.Id}`;
     const response = await axiosAuth(refresh).get(path);
     if (response) {
       const data = response.data;
       console.log("GetNewToken response: ", data);
-      // Handle response data as needed
+      localStorage.setItem("accesstoken", data?.body?.AccessToken);
       dispatch(
         setAuth({ accesstoken: data?.body?.AccessToken, refreshtoken: refresh })
       );
@@ -735,31 +708,24 @@ export const DeleteMenu = (menuId, kitchenId) => async (dispatch) => {
   dispatch(setLoading(false));
 };
 
-export const Forgotpassword = (data) => {
-  const dispatch = useAppDispatch();
+export const Forgotpassword = (data) => async (dispatch) => {
+  dispatch(setLoading(true));
+  dispatch(clearErrors());
 
-  const handleSignIn = async () => {
-    dispatch(setLoading(true));
-    dispatch(clearErrors());
-
-    try {
-      const path = BASE_PATH + "/SignIn";
-      const response = await axios.post(path, data);
-      if (response) {
-        const responseData = response.data;
-        console.log("login response: ", responseData);
-        // Handle response data as needed
-      }
-    } catch (error) {
-      console.log("login error response: ", error);
-      dispatch(setError(error?.message));
+  try {
+    const path = BASE_PATH + "/SignIn";
+    const response = await axios.post(path, data);
+    if (response) {
+      const responseData = response.data;
+      console.log("login response: ", responseData);
+      // Handle response data as needed
     }
+  } catch (error) {
+    console.log("login error response: ", error);
+    dispatch(setError(error?.message));
+  }
 
-    dispatch(setLoading(false));
-  };
-
-  // Call handleSignIn when needed
-  return handleSignIn();
+  dispatch(setLoading(false));
 };
 
 export const GetKitchenMenus = (kitchenId) => async (dispatch) => {
@@ -783,3 +749,24 @@ export const GetKitchenMenus = (kitchenId) => async (dispatch) => {
 
   dispatch(setLoading(false));
 };
+
+export const {
+  setLogout,
+  setImage,
+  setStaff,
+  setReviews,
+  setMenus,
+  setAuth,
+  setBankAccount,
+  setOrders,
+  setIsBankVerified,
+  setIsModalVisible,
+  setIsVerifyingBank,
+  setLoading,
+  setUserData,
+  setNotifyMessage,
+  setRefreshToken,
+  setBanks,
+  setAllStaffs,
+} = kitchenSlice.actions;
+export default kitchenSlice.reducer;

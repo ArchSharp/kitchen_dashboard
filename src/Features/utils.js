@@ -1,8 +1,7 @@
 import Axios from "axios";
-import store from "../Store/store";
 import { GetNewToken } from "./kitchenSlice";
 
-export const baseURL = "https://3a71-102-88-35-181.ngrok-free.app/";
+export const baseURL = "https://21c9-102-88-33-182.ngrok-free.app/";
 
 export const axios = Axios.create({ baseURL, withCredentials: true });
 
@@ -18,35 +17,33 @@ export const axiosAuth = (refreshToken) => {
 
 const axiosWithAuth = Axios.create();
 
-axiosWithAuth.interceptors.request.use((config) => {
-  const token = store.getState()?.kitchen?.auth?.accesstoken;
-  config.baseURL = baseURL;
-  config.timeout = 10000;
-  config.headers.Authorization = `Bearer ${token}`;
+export const setupAxiosInterceptors = (dispatch) => {
+  axiosWithAuth.interceptors.request.use((config) => {
+    const token = localStorage.getItem("accesstoken");
+    config.baseURL = baseURL;
+    config.timeout = 10000;
+    config.headers.Authorization = `Bearer ${token}`;
 
-  return config;
-});
+    return config;
+  });
 
-axiosWithAuth.interceptors.response.use(
-  (response) => {
-    return response;
-  },
-  async (error) => {
-    if (error?.response && error.response.status === 401) {
-      const user = store.getState().kitchen.userData;
-      await store.dispatch(GetNewToken(user));
-
-      // After getting a new token, retry the original request
-      const config = error.config;
-      const newToken = store.getState()?.kitchen?.auth?.accesstoken;
-      config.timeout = 10000;
-      config.headers.Authorization = `Bearer ${newToken}`;
-      // console.log("config: ", config);
-
-      return Axios(config);
+  axiosWithAuth.interceptors.response.use(
+    (response) => {
+      return response;
+    },
+    async (error) => {
+      if (error?.response && error.response.status === 401) {
+        const newToken = localStorage.getItem("accesstoken");
+        const config = error.config;
+        config.timeout = 10000;
+        config.headers.Authorization = `Bearer ${newToken}`;
+        // Dispatch action to get new token
+        dispatch(GetNewToken());
+        return Axios(config);
+      }
+      return Promise.reject(error);
     }
-    return Promise.reject(error);
-  }
-);
+  );
+};
 
 export default axiosWithAuth;
