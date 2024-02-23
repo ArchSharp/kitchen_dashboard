@@ -28,8 +28,6 @@ function Reviews() {
   const [newCommentUserImage, setNewCommentUserImage] =
     useState(profileUserImage);
   const [hasReviews, setHasReviews] = useState(false);
-  const [loading, setLoading] = useState(true);
-  // const { userData, auth } = useMenuContext();
 
   useEffect(() => {
     if (!reviews) {
@@ -99,9 +97,15 @@ function Reviews() {
     setIsButtonDisabled(inputText === "");
   };
 
+  useEffect(() => {
+    if (reviews) {
+      setHasReviews(true);
+    }
+  }, [reviews]);
+
   return (
     <div className="reviews-container">
-      {loading ? (
+      {!reviews ? (
         // Loading component
         <div
           style={{
