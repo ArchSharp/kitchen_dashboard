@@ -49,7 +49,7 @@ function DashboardChart({ loading }) {
 
   useEffect(() => {
     const fetchDailyRevenues = async () => {
-      if (!orders) {
+      if (orders) {
         const paidOrders = orders.filter((order) => order.IsPaid);
         const dailyRevenueData = calculateDailyRevenue(paidOrders);
         setDailyRevenues(dailyRevenueData);

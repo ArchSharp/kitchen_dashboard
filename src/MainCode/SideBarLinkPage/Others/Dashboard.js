@@ -81,7 +81,7 @@ function Dashboard() {
 
   useEffect(() => {
     const fetchKitchenOrders = async () => {
-      if (!orders) {
+      if (orders) {
         const currentDateTodays = new Date();
         const currentDateOkay = new Date();
 
