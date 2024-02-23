@@ -9,7 +9,13 @@ import {
 import RecentOrders from "../../../Components/RecentOrders";
 import DashboardChart from "../../../Components/DashboardChart";
 import { useEffect, useState } from "react";
-import { GetKitchenOrders, GetReviews } from "../../../Features/kitchenSlice";
+import {
+  GetKitchenOrders,
+  GetReviews,
+  setTotalOrders,
+  setTotalCustomers,
+  setTotalRevenue,
+} from "../../../Features/kitchenSlice";
 import {
   selectKitchen,
   useAppSelector,
@@ -18,12 +24,17 @@ import {
 
 function Dashboard() {
   const dispatch = useAppDispatch();
-  const { userData, auth, orders } = useAppSelector(selectKitchen);
+  const {
+    userData,
+    auth,
+    orders,
+    reviews,
+    totalOrders,
+    totalCustomers,
+    totalRevenue,
+  } = useAppSelector(selectKitchen);
   const [mostOrderedFood, setMostOrderedFood] = useState("");
-  const [totalOrders, setTotalOrders] = useState(0);
-  const [totalCustomers, setTotalCustomers] = useState(0);
   const [totalReviews, setTotalReviews] = useState(0);
-  const [totalRevenue, setTotalRevenue] = useState(0);
   const [previousDayTotalOrders, setPreviousDayTotalOrders] = useState(0);
   const [previousDayTotalCustomers, setPreviousDayTotalCustomers] = useState(0);
   const [previousDayTotalReviews, setPreviousDayTotalReviews] = useState(0);
@@ -31,33 +42,29 @@ function Dashboard() {
   const [dailyOrdersCount, setDailyOrdersCount] = useState(0);
 
   const getPreviousDayTotalOrders = () => {
-    const storedOrders = localStorage.getItem("totalOrders");
-    if (storedOrders) {
-      return parseInt(storedOrders, 10);
+    if (totalOrders) {
+      return parseInt(totalOrders.length, 10);
     }
     return 0;
   };
 
   const getPreviousDayTotalCustomers = () => {
-    const storedCustomers = localStorage.getItem("totalCustomers");
-    if (storedCustomers) {
-      return parseInt(storedCustomers, 10);
+    if (totalCustomers) {
+      return parseInt(totalCustomers.length, 10);
     }
     return 0;
   };
 
   const getPreviousDayTotalReviews = () => {
-    const storedReviews = localStorage.getItem("totalReviews");
-    if (storedReviews) {
-      return parseInt(storedReviews, 10);
+    if (reviews) {
+      return parseInt(reviews.length, 10);
     }
     return 0;
   };
 
   const getPreviousDayTotalRevenue = () => {
-    const storedRevenue = localStorage.getItem("totalRevenue");
-    if (storedRevenue) {
-      return parseFloat(storedRevenue);
+    if (totalRevenue) {
+      return parseFloat(totalRevenue);
     }
     return 0;
   };
@@ -80,17 +87,23 @@ function Dashboard() {
   }, []);
 
   useEffect(() => {
+    const totalReviewsReceived = reviews ? reviews.length : 0;
+    setTotalReviews(totalReviewsReceived);
+    const previousDayTotalReviews = getPreviousDayTotalReviews();
+    setPreviousDayTotalReviews(previousDayTotalReviews);
+  }, [reviews]);
+
+  useEffect(() => {
     const fetchKitchenOrders = async () => {
       if (orders) {
-        const currentDateTodays = new Date();
-        const currentDateOkay = new Date();
+        const todaysDate = new Date();
 
         const currentDayOrders = orders.filter((order) => {
           const orderDate = new Date(order.CreatedAt);
           return (
-            orderDate.getDate() === currentDateTodays.getDate() &&
-            orderDate.getMonth() === currentDateTodays.getMonth() &&
-            orderDate.getFullYear() === currentDateTodays.getFullYear()
+            orderDate.getDate() === todaysDate.getDate() &&
+            orderDate.getMonth() === todaysDate.getMonth() &&
+            orderDate.getFullYear() === todaysDate.getFullYear()
           );
         });
 
@@ -102,8 +115,8 @@ function Dashboard() {
         const currentMonthOrders = orders.filter((order) => {
           const orderDate = new Date(order.CreatedAt);
           return (
-            orderDate.getMonth() === currentDateOkay.getMonth() &&
-            orderDate.getFullYear() === currentDateOkay.getFullYear()
+            orderDate.getMonth() === todaysDate.getMonth() &&
+            orderDate.getFullYear() === todaysDate.getFullYear()
           );
         });
 
@@ -128,27 +141,14 @@ function Dashboard() {
           calculateTotalCustomersForCurrentDate(orders, currentDate, true);
         setTotalCustomers(totalCustomersForCurrentDate);
 
-        const reviewsResponse = await GetReviews(userData, auth);
-        if (reviewsResponse && reviewsResponse.code === 200) {
-          const reviews = reviewsResponse.body;
-
-          const totalReviewsReceived = reviews ? reviews.length : 0;
-
-          setTotalReviews(totalReviewsReceived);
-
-          const previousDayTotalReviews = getPreviousDayTotalReviews();
-          setPreviousDayTotalReviews(previousDayTotalReviews);
-
-          localStorage.setItem("totalReviews", totalReviewsReceived.toString());
-        } else {
-          console.error("Failed to fetch kitchen reviews");
-        }
+        const isBasicStaff = userData.Role === "basic";
+        const kitchenId = isBasicStaff ? userData.KitchenId : userData.Id;
+        dispatch(GetReviews(kitchenId));
 
         const totalRevenueReceived = calculateTotalRevenue(orders);
         setTotalRevenue(totalRevenueReceived);
         const previousDayTotalRevenue = getPreviousDayTotalRevenue();
         setPreviousDayTotalRevenue(previousDayTotalRevenue);
-        localStorage.setItem("totalRevenue", totalRevenueReceived.toString());
 
         const mostOrderedFoodMap = orders.reduce((foodCountMap, order) => {
           const orderDate = new Date(order.CreatedAt);
@@ -184,20 +184,11 @@ function Dashboard() {
             : "NILL";
 
         setMostOrderedFood(mostOrdered);
-
         setPreviousDayTotalOrders(previousDayTotal);
 
         const previousDayTotalCustomers = getPreviousDayTotalCustomers();
         setPreviousDayTotalCustomers(previousDayTotalCustomers);
-
         setPreviousDayTotalRevenue(previousDayTotalRevenue);
-
-        // localStorage.setItem('totalOrders', totalOrdersReceived.toString());
-        localStorage.setItem(
-          "totalCustomers",
-          totalCustomersForCurrentDate.toString()
-        );
-        localStorage.setItem("totalRevenue", totalRevenueReceived.toString());
       }
     };
     fetchKitchenOrders();

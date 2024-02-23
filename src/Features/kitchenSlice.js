@@ -21,8 +21,20 @@ const kitchenSlice = createSlice({
     allStaffs: null,
     isVerifyingBank: false,
     bankAccount: null,
+    totalOrders: null,
+    totalCustomers: null,
+    totalRevenue: null,
   },
   reducers: {
+    setTotalRevenue: (state, actions) => {
+      state.totalRevenue = actions.payload;
+    },
+    setTotalCustomers: (state, actions) => {
+      state.totalCustomers = actions.payload;
+    },
+    setTotalOrders: (state, actions) => {
+      state.totalOrders = actions.payload;
+    },
     setImage: (state, actions) => {
       state.image = actions.payload;
     },
@@ -87,6 +99,9 @@ const kitchenSlice = createSlice({
       state.image = null;
       state.staff = null;
       state.image = null;
+      state.totalCustomers = null;
+      state.totalOrders = null;
+      state.totalRevenue = null;
       localStorage.removeItem("accesstoken");
     },
   },
@@ -801,5 +816,8 @@ export const {
   setRefreshToken,
   setBanks,
   setAllStaffs,
+  setTotalOrders,
+  setTotalCustomers,
+  setTotalRevenue,
 } = kitchenSlice.actions;
 export default kitchenSlice.reducer;
