@@ -117,25 +117,26 @@ const Orders = () => {
   };
 
   const fetchOrders = async () => {
-    if (userData) {
+    if (userData && Array.isArray(orders)) {
       dispatch(GetKitchenOrders(userData?.KitchenEmail));
-
-      const sortedMenus = orders?.sort((a, b) => {
+  
+      const sortedMenus = [...orders].sort((a, b) => {
         return moment(b.CreatedAt).valueOf() - moment(a.CreatedAt).valueOf();
       });
-
-      const filteredOrdersForToday = sortedMenus?.filter((order) => {
+  
+      const filteredOrdersForToday = sortedMenus.filter((order) => {
         const orderDate = moment(order.CreatedAt);
         return today === orderDate.date();
       });
-
-      filteredOrdersForToday?.forEach((order, index) => {
-        order.OrderNumber = index + 1;
-      });
-
-      setOrderNumber(orderNumber + orders?.length);
+  
+      const updatedOrders = filteredOrdersForToday.map((order, index) => ({
+        ...order,
+        OrderNumber: index + 1,
+      }));
+  
+      setOrderNumber(orderNumber + orders.length);
     }
-  };
+  };      
 
   useEffect(() => {
     const intervalId = setInterval(fetchOrders, 2000);

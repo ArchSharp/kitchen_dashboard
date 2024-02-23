@@ -145,7 +145,6 @@ function Reviews() {
                   <>
                     <HeartFilled
                       style={{ color: "#c45628" }}
-                      onClick={() => handleLikeClick(index)}
                     />
                     <span
                       style={{ color: "#c45628", fontFamily: "sans-serif" }}
@@ -155,7 +154,7 @@ function Reviews() {
                   </>
                 ) : (
                   <>
-                    <HeartOutlined onClick={() => handleLikeClick(index)} />
+                    <HeartOutlined/>
                     <span style={{ fontFamily: "sans-serif" }}>
                       {review.AgreeCount}
                     </span>
@@ -171,7 +170,6 @@ function Reviews() {
                   <>
                     <DislikeFilled
                       style={{ color: "#c45628" }}
-                      onClick={() => handleDislikeClick(index)}
                     />
                     <span
                       style={{ color: "#c45628", fontFamily: "sans-serif" }}
@@ -182,7 +180,6 @@ function Reviews() {
                 ) : (
                   <>
                     <DislikeOutlined
-                      onClick={() => handleDislikeClick(index)}
                     />
                     <span style={{ fontFamily: "sans-serif" }}>
                       {review.DisagreeCount}

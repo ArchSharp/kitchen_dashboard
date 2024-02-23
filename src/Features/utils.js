@@ -1,7 +1,7 @@
 import Axios from "axios";
 import { GetNewToken } from "./kitchenSlice";
 
-export const baseURL = "https://c58a-102-88-33-103.ngrok-free.app/";
+export const baseURL = "https://15bb-129-205-110-18.ngrok-free.app";
 
 export const axios = Axios.create({ baseURL, withCredentials: true });
 
