@@ -87,6 +87,7 @@ const kitchenSlice = createSlice({
       state.image = null;
       state.staff = null;
       state.image = null;
+      localStorage.removeItem("accesstoken");
     },
   },
 });
@@ -605,7 +606,7 @@ export const ResetPasswords = (data) => async (dispatch) => {
           setNotifyMessage({
             isSuccess: true,
             message: "Password Updated",
-            description: "Email OTP has been resent. Check your email.",
+            description: "Your password has been changed successfully.",
           })
         );
       }
