@@ -48,7 +48,7 @@ function Header() {
   useEffect(() => {
     dispatch(setImage(`${baseURL}Uploads/${userData?.KitchenImage}`));
   }, [image]);
-  console.log("Image: ", image);
+  // console.log("Image: ", image);
 
   const handleBellIconClick = () => {
     setIsModalVisible(true);
