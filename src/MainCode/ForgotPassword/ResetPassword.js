@@ -45,7 +45,7 @@ function ResetPassword() {
         notification.error(response);
         dispatch(setNotifyMessage(null));
         if (notifyMessage?.message === "Expired OTP") {
-          navigate("/forgotpassword");
+          navigate("/forgotPassword");
         }
       }
     }

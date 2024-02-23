@@ -29,7 +29,7 @@ function App() {
     { path: "/", element: <Signup /> },
     { path: "/signIn", element: <SignIn /> },
     { path: "/home", element: <Home /> },
-    { path: "/forgotpassword", element: <ForgotPassword /> },
+    { path: "/forgotPassword", element: <ForgotPassword /> },
     { path: "/resetPassword/:email", element: <ResetPassword /> },
     { path: "/verifyEmail", element: <VerifyEmail /> },
     { path: "/resendEmail", element: <ResendCode /> },

@@ -27,7 +27,7 @@ function ForgotPassword() {
   };
 
   useEffect(() => {
-    if (window.location.pathname.includes("/forgotpassword")) {
+    if (window.location.pathname.includes("/forgotPassword")) {
       if (notifyMessage?.isSuccess === true) {
         var response = { ...notifyMessage };
         delete response.isSuccess;

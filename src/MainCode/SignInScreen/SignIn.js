@@ -124,7 +124,7 @@ function SignIn() {
             </div>
             <div style={{ marginLeft: "7%", fontFamily: "sans-serif" }}>
               <p>
-                Forgot Password? <Link to="/forgotpassword">Click here</Link>
+                Forgot Password? <Link to="/forgotPassword">Click here</Link>
               </p>
             </div>
             <div className="button-container">
