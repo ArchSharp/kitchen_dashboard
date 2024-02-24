@@ -60,21 +60,21 @@ function DashboardChart({ loading }) {
         );
         setMonthlyRevenue(totalRevenueForMonth);
 
-        const currentDate = new Date();
-        const monthYearKey = `${
-          currentDate.getMonth() + 1
-        }-${currentDate.getFullYear()}`;
-        const updatedHistoricalData = [...historicalData];
-        updatedHistoricalData.push({
-          monthYear: monthYearKey,
-          revenue: totalRevenueForMonth,
-        });
-        setHistoricalData(updatedHistoricalData);
+        // const currentDate = new Date();
+        // const monthYearKey = `${
+        //   currentDate.getMonth() + 1
+        // }-${currentDate.getFullYear()}`;
+        // const updatedHistoricalData = [...historicalData];
+        // updatedHistoricalData.push({
+        //   monthYear: monthYearKey,
+        //   revenue: totalRevenueForMonth,
+        // });
+        // setHistoricalData(updatedHistoricalData);
       }
     };
 
     fetchDailyRevenues();
-  }, [userData.KitchenEmail, auth, historicalData]);
+  }, [userData.KitchenEmail, auth]);
 
   const calculateDailyRevenue = (orders) => {
     const dailyRevenueData = new Array(31).fill(0);

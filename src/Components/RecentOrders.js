@@ -39,7 +39,7 @@ function RecentOrders() {
     };
 
     fetchRecentOrders();
-  }, [userData.KitchenEmail, auth, orders]);
+  }, [userData.KitchenEmail, auth]);
 
   const columns = [
     {
