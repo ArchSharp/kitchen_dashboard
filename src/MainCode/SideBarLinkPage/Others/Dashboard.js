@@ -110,7 +110,7 @@ function Dashboard() {
         const paidOrders = currentDayOrders.filter(
           (order) => order.IsPaid === true
         );
-        setTotalOrders(paidOrders.length);
+        dispatch(setTotalOrders(paidOrders.length));
 
         const currentMonthOrders = orders.filter((order) => {
           const orderDate = new Date(order.CreatedAt);
@@ -125,9 +125,9 @@ function Dashboard() {
         );
         if (monthlyOrders.length > 0) {
           const totalRevenueForMonth = calculateTotalRevenue(monthlyOrders);
-          setTotalRevenue(totalRevenueForMonth);
+          dispatch(setTotalRevenue(totalRevenueForMonth));
         } else {
-          setTotalRevenue(0);
+          dispatch(setTotalRevenue(0));
         }
 
         const currentDateToday = new Date();
@@ -139,14 +139,14 @@ function Dashboard() {
         const currentDate = new Date();
         const totalCustomersForCurrentDate =
           calculateTotalCustomersForCurrentDate(orders, currentDate, true);
-        setTotalCustomers(totalCustomersForCurrentDate);
+        dispatch(setTotalCustomers(totalCustomersForCurrentDate));
 
         const isBasicStaff = userData.Role === "basic";
         const kitchenId = isBasicStaff ? userData.KitchenId : userData.Id;
         dispatch(GetReviews(kitchenId));
 
         const totalRevenueReceived = calculateTotalRevenue(orders);
-        setTotalRevenue(totalRevenueReceived);
+        dispatch(setTotalRevenue(totalRevenueReceived));
         const previousDayTotalRevenue = getPreviousDayTotalRevenue();
         setPreviousDayTotalRevenue(previousDayTotalRevenue);
 
@@ -192,7 +192,7 @@ function Dashboard() {
       }
     };
     fetchKitchenOrders();
-  }, [userData.KitchenEmail, auth]);
+  }, [userData.KitchenEmail, auth, orders]);
 
   function calculateDailyOrders(orders, currentDate) {
     return orders.filter((order) => {
@@ -269,35 +269,32 @@ function Dashboard() {
           >
             <Space direction="horizontal" size={15}>
               <ShoppingCart weight="fill" color="green" size={30} />
-              <Statistic title="Orders" value={totalOrders} />
+              <Statistic title="Orders" value={totalOrders ? totalOrders : 0} />
             </Space>
           </Card>
           <DashboardCard
             key="most-ordered"
             icon={<Hamburger weight="fill" color="green" size={30} />}
             title={"Most Ordered Food"}
-            value={mostOrderedFood}
+            value={mostOrderedFood ? mostOrderedFood : ""}
           />
           <DashboardCard
             key="customers"
             icon={<User weight="fill" color="blue" size={30} />}
             title={"Customers"}
-            value={totalCustomers}
-            previousValue={previousDayTotalCustomers}
+            value={totalCustomers ? totalCustomers : 0}
           />
           <DashboardCard
             key="reviews"
             icon={<Chat weight="fill" color="#c45628" size={30} />}
             title={"Reviews"}
             value={totalReviews}
-            previousValue={previousDayTotalReviews}
           />
           <DashboardCard
             key="revenue"
             icon={<CurrencyNgn weight="fill" color="black" size={30} />}
             title={"Total Revenue"}
-            value={totalRevenue}
-            previousValue={previousDayTotalRevenue}
+            value={totalRevenue ? totalRevenue : 0}
           />
         </Space>
         <div style={{ display: "flex", flexDirection: "row" }}>
